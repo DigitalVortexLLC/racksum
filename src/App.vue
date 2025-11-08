@@ -30,6 +30,26 @@
           </button>
 
           <button
+            @click="openSaveDialog"
+            class="px-4 py-2 rounded transition-colors font-medium"
+            style="background-color: rgba(0, 0, 0, 0.1); color: #0c0c0d;"
+            @mouseover="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'"
+            title="Save to database"
+          >
+            Save
+          </button>
+          <button
+            @click="openLoadDialog"
+            class="px-4 py-2 rounded transition-colors font-medium"
+            style="background-color: rgba(0, 0, 0, 0.1); color: #0c0c0d;"
+            @mouseover="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'"
+            title="Load from database"
+          >
+            Load
+          </button>
+          <button
             @click="showConfig = true"
             class="px-4 py-2 rounded transition-colors font-medium"
             style="background-color: rgba(0, 0, 0, 0.1); color: #0c0c0d;"
@@ -65,6 +85,12 @@
     <!-- Modals -->
     <ConfigMenu v-if="showConfig" @close="showConfig = false" />
     <ImportExport v-if="showImportExport" @close="showImportExport = false" />
+    <SaveLoadDialog
+      v-model="showSaveLoad"
+      :mode="saveLoadMode"
+      :current-config="currentConfig"
+      @config-loaded="handleConfigLoaded"
+    />
   </div>
 </template>
 
@@ -77,13 +103,27 @@ import UtilizationPanel from './components/UtilizationPanel.vue'
 import UnrackedDevices from './components/UnrackedDevices.vue'
 import ConfigMenu from './components/ConfigMenu.vue'
 import ImportExport from './components/ImportExport.vue'
+import SaveLoadDialog from './components/SaveLoadDialog.vue'
 import { useDarkMode } from './composables/useDarkMode'
+import { useRackConfig } from './composables/useRackConfig'
+import { useDatabase } from './composables/useDatabase'
 
 const showConfig = ref(false)
 const showImportExport = ref(false)
+const showSaveLoad = ref(false)
+const saveLoadMode = ref('save')
 
 // Dark mode
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
+
+// Rack configuration
+const { config, loadConfiguration } = useRackConfig()
+
+// Database
+const { loadCurrentSite } = useDatabase()
+
+// Load current site on mount
+loadCurrentSite()
 
 // Track unracked panel state
 const unrackedPanelExpanded = ref(true)
@@ -92,4 +132,22 @@ provide('unrackedPanelExpanded', unrackedPanelExpanded)
 const unrackedPanelWidth = computed(() => {
   return unrackedPanelExpanded.value ? '320px' : '64px'
 })
+
+// Get current configuration for saving
+const currentConfig = computed(() => config.value)
+
+// Save/Load functions
+function openSaveDialog() {
+  saveLoadMode.value = 'save'
+  showSaveLoad.value = true
+}
+
+function openLoadDialog() {
+  saveLoadMode.value = 'load'
+  showSaveLoad.value = true
+}
+
+function handleConfigLoaded(configData) {
+  loadConfiguration(configData)
+}
 </script>
