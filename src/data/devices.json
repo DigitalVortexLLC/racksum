@@ -1,0 +1,214 @@
+{
+  "categories": [
+    {
+      "id": "power",
+      "name": "Power Equipment",
+      "devices": [
+        {
+          "id": "apc-smt3000",
+          "name": "APC SMT3000 UPS",
+          "category": "power",
+          "ruSize": 2,
+          "powerDraw": 2700,
+          "color": "#E74C3C",
+          "description": "3000VA UPS with LCD display"
+        },
+        {
+          "id": "apc-ap8959",
+          "name": "APC Metered Rack PDU",
+          "category": "power",
+          "ruSize": 0,
+          "powerDraw": 0,
+          "color": "#C0392B",
+          "description": "Zero-U 208V PDU, 30A, 21 outlets"
+        },
+        {
+          "id": "tripp-lite-pdumh30hvnet",
+          "name": "Tripp Lite Switched PDU",
+          "category": "power",
+          "ruSize": 1,
+          "powerDraw": 0,
+          "color": "#D35400",
+          "description": "1U switched PDU, 30A, 16 outlets"
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "name": "Network Devices",
+      "devices": [
+        {
+          "id": "cisco-c9300-48p",
+          "name": "Cisco Catalyst 9300 48-port",
+          "category": "network",
+          "ruSize": 1,
+          "powerDraw": 750,
+          "color": "#3498DB",
+          "description": "48-port PoE+ Gigabit switch"
+        },
+        {
+          "id": "cisco-c9500-24y4c",
+          "name": "Cisco Catalyst 9500 24-port",
+          "category": "network",
+          "ruSize": 1,
+          "powerDraw": 550,
+          "color": "#2980B9",
+          "description": "24-port 10/25G switch"
+        },
+        {
+          "id": "ubiquiti-udm-pro",
+          "name": "Ubiquiti Dream Machine Pro",
+          "category": "network",
+          "ruSize": 1,
+          "powerDraw": 35,
+          "color": "#1ABC9C",
+          "description": "UniFi Dream Machine Pro"
+        },
+        {
+          "id": "palo-alto-pa-3220",
+          "name": "Palo Alto PA-3220",
+          "category": "network",
+          "ruSize": 1,
+          "powerDraw": 200,
+          "color": "#16A085",
+          "description": "Next-gen firewall"
+        },
+        {
+          "id": "cisco-asr-1001-x",
+          "name": "Cisco ASR 1001-X Router",
+          "category": "network",
+          "ruSize": 1,
+          "powerDraw": 200,
+          "color": "#27AE60",
+          "description": "Aggregation services router"
+        }
+      ]
+    },
+    {
+      "id": "servers",
+      "name": "Servers",
+      "devices": [
+        {
+          "id": "dell-r650-1u",
+          "name": "Dell PowerEdge R650",
+          "category": "servers",
+          "ruSize": 1,
+          "powerDraw": 750,
+          "color": "#9B59B6",
+          "description": "1U dual-socket server"
+        },
+        {
+          "id": "dell-r750-2u",
+          "name": "Dell PowerEdge R750",
+          "category": "servers",
+          "ruSize": 2,
+          "powerDraw": 1400,
+          "color": "#8E44AD",
+          "description": "2U dual-socket server"
+        },
+        {
+          "id": "hpe-dl380-gen10",
+          "name": "HPE ProLiant DL380 Gen10",
+          "category": "servers",
+          "ruSize": 2,
+          "powerDraw": 1600,
+          "color": "#6C3483",
+          "description": "2U enterprise server"
+        },
+        {
+          "id": "supermicro-4u-twin",
+          "name": "Supermicro 4U Twin",
+          "category": "servers",
+          "ruSize": 4,
+          "powerDraw": 2000,
+          "color": "#5B2C6F",
+          "description": "4U twin node server"
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "name": "Storage",
+      "devices": [
+        {
+          "id": "synology-rs3621xs",
+          "name": "Synology RS3621xs+",
+          "category": "storage",
+          "ruSize": 2,
+          "powerDraw": 250,
+          "color": "#F39C12",
+          "description": "12-bay NAS, 2U"
+        },
+        {
+          "id": "qnap-es1686dc",
+          "name": "QNAP ES1686dc",
+          "category": "storage",
+          "ruSize": 3,
+          "powerDraw": 300,
+          "color": "#E67E22",
+          "description": "16-bay enterprise NAS"
+        },
+        {
+          "id": "netapp-fas2750",
+          "name": "NetApp FAS2750",
+          "category": "storage",
+          "ruSize": 2,
+          "powerDraw": 440,
+          "color": "#D68910",
+          "description": "Hybrid storage array"
+        },
+        {
+          "id": "dell-me4024",
+          "name": "Dell ME4024",
+          "category": "storage",
+          "ruSize": 2,
+          "powerDraw": 350,
+          "color": "#CA6F1E",
+          "description": "24-bay SAN storage"
+        }
+      ]
+    },
+    {
+      "id": "specialized",
+      "name": "Specialized Equipment",
+      "devices": [
+        {
+          "id": "kvm-8port",
+          "name": "8-Port KVM Switch",
+          "category": "specialized",
+          "ruSize": 1,
+          "powerDraw": 15,
+          "color": "#95A5A6",
+          "description": "8-port KVM over IP"
+        },
+        {
+          "id": "console-server",
+          "name": "Console Server 16-port",
+          "category": "specialized",
+          "ruSize": 1,
+          "powerDraw": 25,
+          "color": "#7F8C8D",
+          "description": "16-port serial console"
+        },
+        {
+          "id": "patch-panel-48",
+          "name": "48-Port Patch Panel",
+          "category": "specialized",
+          "ruSize": 1,
+          "powerDraw": 0,
+          "color": "#566573",
+          "description": "Cat6A patch panel"
+        },
+        {
+          "id": "blank-panel-1u",
+          "name": "1U Blank Panel",
+          "category": "specialized",
+          "ruSize": 1,
+          "powerDraw": 0,
+          "color": "#34495E",
+          "description": "Blank filler panel"
+        }
+      ]
+    }
+  ]
+}
