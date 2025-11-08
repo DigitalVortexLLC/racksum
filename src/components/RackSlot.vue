@@ -3,6 +3,8 @@
     @dragover.prevent="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    :draggable="device && isFirstRU"
+    @dragstart="handleDragStart"
     :class="slotClasses"
     class="relative flex items-center border transition-colors"
     :style="slotStyle"
@@ -57,7 +59,7 @@ const props = defineProps({
 })
 
 const isDragOver = ref(false)
-const { canDrop, handleDrop: drop } = useDragDrop()
+const { canDrop, handleDrop: drop, startDrag } = useDragDrop()
 const { removeDeviceFromRack } = useRackConfig()
 
 const isFirstRU = computed(() => {
@@ -77,6 +79,9 @@ const slotClasses = computed(() => {
     classes.push('h-6')
     if (!isFirstRU.value) {
       classes.push('border-t-0') // Connect multi-RU devices visually
+    }
+    if (isFirstRU.value) {
+      classes.push('cursor-move') // Make it clear the device can be dragged
     }
   } else {
     // Empty slot
@@ -102,6 +107,16 @@ const slotStyle = computed(() => {
     borderColor: 'var(--border-color)'
   }
 })
+
+const handleDragStart = (event) => {
+  if (props.device && isFirstRU.value) {
+    startDrag(event, props.device, {
+      type: 'rack',
+      rackId: props.rackId,
+      position: props.position
+    })
+  }
+}
 
 const handleDragOver = (event) => {
   if (!props.device) {

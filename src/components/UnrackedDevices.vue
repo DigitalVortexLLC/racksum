@@ -1,8 +1,11 @@
 <template>
   <aside
     class="shadow-lg transition-all duration-300 flex flex-col fixed right-0 top-0 h-screen z-10"
-    :class="isExpanded ? 'w-80' : 'w-16'"
+    :class="[isExpanded ? 'w-80' : 'w-16', { 'drop-zone-active': isDragOver }]"
     :style="{ backgroundColor: 'var(--bg-primary)', borderLeft: '1px solid var(--border-color)' }"
+    @dragover.prevent="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <!-- Header with Toggle -->
     <div
@@ -137,7 +140,8 @@ import { useRackConfig } from '../composables/useRackConfig'
 import { useDragDrop } from '../composables/useDragDrop'
 import { useToast } from '../composables/useToast'
 
-const isExpanded = ref(true)
+const isExpanded = ref(false)
+const isDragOver = ref(false)
 const unrackedPanelExpanded = inject('unrackedPanelExpanded', ref(true))
 
 // Sync with parent
@@ -146,11 +150,27 @@ watch(isExpanded, (newValue) => {
 })
 
 const { unrackedDevices, removeUnrackedDevice } = useRackConfig()
-const { startDrag } = useDragDrop()
+const { startDrag, handleDropToUnracked, dragSource } = useDragDrop()
 const { showSuccess, showInfo } = useToast()
 
 const handleDragStart = (event, device) => {
-  startDrag(event, device)
+  startDrag(event, device, { type: 'unracked' })
+}
+
+const handleDragOver = (event) => {
+  // Only show drop zone if dragging from a rack
+  if (dragSource.value?.type === 'rack') {
+    isDragOver.value = true
+  }
+}
+
+const handleDragLeave = (event) => {
+  isDragOver.value = false
+}
+
+const handleDrop = (event) => {
+  isDragOver.value = false
+  handleDropToUnracked(event)
 }
 
 const removeDevice = (instanceId) => {
@@ -161,3 +181,10 @@ const removeDevice = (instanceId) => {
   }
 }
 </script>
+
+<style scoped>
+.drop-zone-active {
+  box-shadow: inset 0 0 0 3px var(--color-primary);
+  transition: box-shadow 0.2s ease;
+}
+</style>

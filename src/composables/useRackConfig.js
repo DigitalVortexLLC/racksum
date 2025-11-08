@@ -123,7 +123,7 @@ export function useRackConfig() {
     return true
   }
 
-  const canPlaceDevice = (rackId, position, ruSize) => {
+  const canPlaceDevice = (rackId, position, ruSize, excludeInstanceId = null) => {
     const rack = config.value.racks.find(r => r.id === rackId)
     if (!rack) return false
 
@@ -137,6 +137,11 @@ export function useRackConfig() {
     // Check for overlapping devices
     const endPosition = position + ruSize - 1
     for (const device of rack.devices) {
+      // Skip the device we're moving (if any)
+      if (excludeInstanceId && device.instanceId === excludeInstanceId) {
+        continue
+      }
+
       const deviceEnd = device.position + device.ruSize - 1
 
       // Check if ranges overlap
