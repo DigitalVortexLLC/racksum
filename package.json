@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server.js",
+    "server": "cd backend && python manage.py runserver 3000",
     "start": "npm run build && npm run server",
-    "db:init": "node src/db/init.js"
+    "db:init": "cd backend && python manage.py migrate",
+    "server:legacy": "node server.js"
   },
   "keywords": [
     "rack",
