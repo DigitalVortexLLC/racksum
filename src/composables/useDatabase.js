@@ -6,6 +6,51 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const currentSite = ref(null);
 const sites = ref([]);
 
+/**
+ * Get CSRF token from cookie
+ */
+function getCsrfToken() {
+  const name = 'csrftoken';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+/**
+ * Create fetch options with CSRF token for POST/PUT/PATCH/DELETE requests
+ */
+function createFetchOptions(method, body = null) {
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'same-origin',
+  };
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      options.headers['X-CSRFToken'] = csrfToken;
+    }
+  }
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  return options;
+}
+
 export function useDatabase() {
   const loading = ref(false);
   const error = ref(null);
@@ -22,7 +67,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites`);
+      const response = await fetch(`${API_BASE_URL}/api/sites`, {
+        credentials: 'same-origin',
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch sites: ${response.statusText}`);
@@ -217,7 +264,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/${siteId}/racks`);
+      const response = await fetch(`${API_BASE_URL}/api/sites/${siteId}/racks`, {
+        credentials: 'same-origin',
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load rack configurations: ${response.statusText}`);
@@ -295,7 +344,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/racks`);
+      const response = await fetch(`${API_BASE_URL}/api/racks`, {
+        credentials: 'same-origin',
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch rack configurations: ${response.statusText}`);
