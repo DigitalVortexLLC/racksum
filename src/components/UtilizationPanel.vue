@@ -6,7 +6,7 @@
   >
     <!-- Header with Toggle -->
     <div
-      class="flex items-center justify-between p-4 cursor-pointer transition-colors"
+      class="flex items-center justify-between p-4 cursor-pointer transition-colors rounded-t-lg"
       style="color: var(--text-primary);"
       @click="isExpanded = !isExpanded"
       @mouseover="$event.target.style.backgroundColor = 'var(--bg-secondary)'"
