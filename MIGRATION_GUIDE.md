@@ -42,10 +42,10 @@ This document describes the migration from Express.js to Django for the RackSum 
 
 ### Files Modified
 
-- `package.json`: Updated scripts to use Django
-  - `npm run server`: Now runs Django server
-  - `npm run db:init`: Now runs Django migrations
-  - `npm run server:legacy`: Preserved Express server for reference
+- `package.json`: Updated to use Django
+  - `npm run server`: Runs Django server
+  - `npm run db:init`: Runs Django migrations
+  - Removed Express dependencies (express, cors, mysql2, dotenv)
 
 ### New Files Created
 
@@ -59,12 +59,17 @@ This document describes the migration from Express.js to Django for the RackSum 
   - `api/migrations/` - Database migrations
 - `requirements.txt` - Python dependencies
 - `venv/` - Python virtual environment
-- `start_django.sh` - Server startup script
+- `start_server.sh` - Server startup script
 
-### Files Preserved (Legacy)
+### Files Removed (Post-Migration Cleanup)
 
-- `server.js` - Original Express server (preserved for reference)
-- `src/db/` - Original database code (preserved for reference)
+- `server.js` - Original Express server (no longer needed)
+- `src/db/` - Original Express database code (replaced by Django models)
+  - `src/db/connection.js`
+  - `src/db/services.js`
+  - `src/db/init.js`
+  - `src/db/schema.sql`
+- `src/composables/useDatabase_new.js` - Duplicate file (removed)
 
 ## Setup Instructions
 
@@ -165,11 +170,8 @@ Django uses the **existing MySQL database** - no schema changes were required. T
 6. **Scalability**: Better performance for complex queries
 7. **Ecosystem**: Rich ecosystem of packages and tools
 
-## Rollback
+## Migration Complete
 
-If you need to rollback to Express, simply:
-```bash
-npm run server:legacy
-```
+The migration from Express to Django is now complete. All legacy Express files have been removed from the codebase. The application now runs exclusively on Django.
 
-The Express server is preserved in `server.js` for reference.
+If you need to reference the old Express implementation, you can find it in the git history before the post-migration cleanup commit.

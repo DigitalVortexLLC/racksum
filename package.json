@@ -10,7 +10,6 @@
     "server": "cd backend && python manage.py runserver 3000",
     "start": "npm run build && npm run server",
     "db:init": "cd backend && python manage.py migrate",
-    "server:legacy": "node server.js",
     "docs:serve": "mkdocs serve",
     "docs:build": "mkdocs build",
     "docs:deploy": "mkdocs gh-deploy"
@@ -28,10 +27,6 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vueuse/core": "^14.0.0",
     "autoprefixer": "^10.4.21",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "mysql2": "^3.15.3",
     "postcss": "^8.5.6",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
