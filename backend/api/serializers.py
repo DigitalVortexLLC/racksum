@@ -74,6 +74,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             'category',
             'ru_size',
             'power_draw',
+            'power_ports_used',
             'color',
             'description',
             'created_at',
@@ -166,6 +167,7 @@ class RackSerializer(serializers.ModelSerializer):
     site_name = serializers.CharField(source='site.name', read_only=True)
     power_utilization = serializers.SerializerMethodField()
     hvac_load = serializers.SerializerMethodField()
+    power_ports_used = serializers.SerializerMethodField()
 
     class Meta:
         model = Rack
@@ -179,6 +181,7 @@ class RackSerializer(serializers.ModelSerializer):
             'devices',
             'power_utilization',
             'hvac_load',
+            'power_ports_used',
             'created_at',
             'updated_at'
         ]
@@ -191,6 +194,10 @@ class RackSerializer(serializers.ModelSerializer):
     def get_hvac_load(self, obj):
         """Get heat load in BTU/hr"""
         return obj.get_hvac_load()
+
+    def get_power_ports_used(self, obj):
+        """Get total number of PDU power ports used"""
+        return obj.get_power_ports_used()
 
 
 class RackCreateSerializer(serializers.ModelSerializer):

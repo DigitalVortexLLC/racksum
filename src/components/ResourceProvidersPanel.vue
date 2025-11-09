@@ -73,6 +73,7 @@
             </div>
             <div class="text-xs" style="color: var(--text-secondary);">
               <span v-if="provider.powerCapacity > 0">{{ provider.powerCapacity.toLocaleString() }}W</span>
+              <span v-if="provider.powerPortsCapacity > 0" class="ml-2">{{ provider.powerPortsCapacity }} ports</span>
               <span v-if="provider.coolingCapacity > 0">{{ (provider.coolingCapacity / 12000).toFixed(1) }} Tons</span>
               <span v-if="provider.networkCapacity > 0">{{ provider.networkCapacity }} Gbps</span>
             </div>
@@ -98,6 +99,12 @@
               <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
             </svg>
             <span>{{ totalPowerCapacity.toLocaleString() }}W</span>
+          </div>
+          <div v-if="totalPowerPortsCapacity > 0" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+            </svg>
+            <span>{{ totalPowerPortsCapacity }} power ports</span>
           </div>
           <div v-if="totalCoolingCapacity > 0" class="flex items-center gap-2">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -134,6 +141,7 @@ import { useResourceProviders } from '../composables/useResourceProviders'
 const {
   resourceProviders,
   totalPowerCapacity,
+  totalPowerPortsCapacity,
   totalCoolingCapacity,
   totalNetworkCapacity
 } = useResourceProviders()

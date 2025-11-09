@@ -5,7 +5,7 @@ import { calculateHeatLoad } from '../utils/calculations'
 
 export function useUtilization() {
   const { config } = useRackConfig()
-  const { totalPowerCapacity, totalCoolingCapacity } = useResourceProviders()
+  const { totalPowerCapacity, totalPowerPortsCapacity, totalCoolingCapacity } = useResourceProviders()
 
   // Calculate total power used across all racks and unracked devices
   const powerUsed = computed(() => {
@@ -39,6 +39,37 @@ export function useUtilization() {
   const powerPercentage = computed(() => {
     if (powerCapacity.value === 0) return 0
     return Math.min(100, Math.round((powerUsed.value / powerCapacity.value) * 100))
+  })
+
+  // Calculate power ports used across all racks and unracked devices
+  const powerPortsUsed = computed(() => {
+    let total = 0
+
+    // Add power ports from devices in racks
+    for (const rack of config.value.racks) {
+      for (const device of rack.devices) {
+        total += device.powerPortsUsed || 1
+      }
+    }
+
+    // Add power ports from unracked devices
+    if (config.value.unrackedDevices) {
+      for (const device of config.value.unrackedDevices) {
+        total += device.powerPortsUsed || 1
+      }
+    }
+
+    return total
+  })
+
+  const powerPortsCapacity = computed(() => {
+    // Use resource providers if available
+    return totalPowerPortsCapacity.value || 0
+  })
+
+  const powerPortsPercentage = computed(() => {
+    if (powerPortsCapacity.value === 0) return 0
+    return Math.min(100, Math.round((powerPortsUsed.value / powerPortsCapacity.value) * 100))
   })
 
   // Calculate HVAC load (1:1 with power draw, converted to BTU/hr)
@@ -83,17 +114,20 @@ export function useUtilization() {
   })
 
   const isOverCapacity = computed(() => {
-    return powerPercentage.value > 100 || hvacPercentage.value > 100
+    return powerPercentage.value > 100 || hvacPercentage.value > 100 || powerPortsPercentage.value > 100
   })
 
   const usingResourceProviders = computed(() => {
-    return totalPowerCapacity.value > 0 || totalCoolingCapacity.value > 0
+    return totalPowerCapacity.value > 0 || totalCoolingCapacity.value > 0 || totalPowerPortsCapacity.value > 0
   })
 
   return {
     powerUsed,
     powerCapacity,
     powerPercentage,
+    powerPortsUsed,
+    powerPortsCapacity,
+    powerPortsPercentage,
     hvacLoad,
     hvacCapacity,
     hvacPercentage,

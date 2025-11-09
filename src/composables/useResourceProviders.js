@@ -47,6 +47,7 @@ export function useResourceProviders() {
       name: provider.name,
       type: provider.type,
       powerCapacity: provider.powerCapacity || 0,
+      powerPortsCapacity: provider.powerPortsCapacity || 0, // Number of PDU power ports
       coolingCapacity: provider.coolingCapacity || 0, // BTU/hr
       networkCapacity: provider.networkCapacity || 0, // Gbps
       description: provider.description || '',
@@ -90,6 +91,12 @@ export function useResourceProviders() {
   const totalPowerCapacity = computed(() => {
     return resourceProviders.value.reduce((sum, provider) => {
       return sum + (provider.powerCapacity || 0)
+    }, 0)
+  })
+
+  const totalPowerPortsCapacity = computed(() => {
+    return resourceProviders.value.reduce((sum, provider) => {
+      return sum + (provider.powerPortsCapacity || 0)
     }, 0)
   })
 
@@ -163,6 +170,7 @@ export function useResourceProviders() {
   return {
     resourceProviders,
     totalPowerCapacity,
+    totalPowerPortsCapacity,
     totalCoolingCapacity,
     totalNetworkCapacity,
     getPowerProviders,
