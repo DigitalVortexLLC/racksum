@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 // Reactive state for current site
 const currentSite = ref(null);
 const sites = ref([]);
+const currentRackName = ref(null); // Track loaded rack configuration name for auto-save
 
 /**
  * Get CSRF token from cookie
@@ -195,6 +196,20 @@ export function useDatabase() {
       localStorage.setItem('racksum-current-site', JSON.stringify(site));
     } else {
       localStorage.removeItem('racksum-current-site');
+      currentRackName.value = null;
+      localStorage.removeItem('racksum-current-rack-name');
+    }
+  }
+
+  /**
+   * Set the current rack configuration name (for auto-save)
+   */
+  function setCurrentRackName(rackName) {
+    currentRackName.value = rackName;
+    if (rackName) {
+      localStorage.setItem('racksum-current-rack-name', rackName);
+    } else {
+      localStorage.removeItem('racksum-current-rack-name');
     }
   }
 
@@ -207,8 +222,37 @@ export function useDatabase() {
       if (saved) {
         currentSite.value = JSON.parse(saved);
       }
+      const savedRackName = localStorage.getItem('racksum-current-rack-name');
+      if (savedRackName) {
+        currentRackName.value = savedRackName;
+      }
     } catch (err) {
       console.error('Error loading current site:', err);
+    }
+  }
+
+  /**
+   * Auto-save the current rack configuration (silent save without user interaction)
+   */
+  async function autoSaveRackConfiguration(configData) {
+    // Only auto-save if we have both a current site and rack name
+    if (!currentSite.value || !currentRackName.value) {
+      return;
+    }
+
+    try {
+      // Silent save - don't set loading state to avoid UI flicker
+      await fetch(
+        `${API_BASE_URL}/api/sites/${currentSite.value.id}/racks`,
+        createFetchOptions('POST', {
+          name: currentRackName.value,
+          configData,
+          description: null,
+        })
+      );
+      // Don't throw errors or show notifications for auto-save
+    } catch (err) {
+      console.warn('Auto-save failed:', err);
     }
   }
 
@@ -360,6 +404,7 @@ export function useDatabase() {
     loading,
     error,
     currentSite,
+    currentRackName,
     sites,
 
     // Site operations
@@ -369,6 +414,7 @@ export function useDatabase() {
     deleteSite,
     setCurrentSite,
     loadCurrentSite,
+    setCurrentRackName,
 
     // Rack operations
     saveRackConfiguration,
@@ -376,5 +422,6 @@ export function useDatabase() {
     loadRackConfiguration,
     deleteRackConfiguration,
     getAllRacks,
+    autoSaveRackConfiguration,
   };
 }

@@ -1,6 +1,11 @@
 import { ref, watch } from 'vue'
+import { useDatabase } from './useDatabase'
 
 const STORAGE_KEY = 'racksum-config'
+
+// Debounce timer for auto-save
+let autoSaveTimer = null
+const AUTO_SAVE_DELAY = 2000 // 2 seconds delay
 
 // Default configuration
 const createDefaultConfig = () => ({
@@ -48,6 +53,27 @@ watch(config, (newConfig) => {
   } catch (error) {
     console.error('Failed to save configuration to localStorage:', error)
   }
+}, { deep: true })
+
+// Auto-save to database with debouncing (only if site and rack are loaded)
+watch(config, (newConfig) => {
+  const { currentSite, currentRackName, autoSaveRackConfiguration } = useDatabase()
+
+  // Only auto-save if we have a current site and rack name
+  if (!currentSite.value || !currentRackName.value) {
+    return
+  }
+
+  // Clear existing timer
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer)
+  }
+
+  // Set new timer for debounced auto-save
+  autoSaveTimer = setTimeout(() => {
+    console.log(`Auto-saving "${currentRackName.value}" to site "${currentSite.value.name}"`)
+    autoSaveRackConfiguration(newConfig)
+  }, AUTO_SAVE_DELAY)
 }, { deep: true })
 
 // Initialize on first load

@@ -356,6 +356,7 @@ const {
   fetchSites,
   createSite,
   setCurrentSite,
+  setCurrentRackName,
   saveRackConfiguration,
   loadRacksBySite,
   loadRackConfiguration,
@@ -471,6 +472,7 @@ async function handleSave() {
     );
 
     setCurrentSite(selectedSite.value);
+    setCurrentRackName(rackName.value.trim()); // Set rack name for auto-save
     showToast('success', `Rack configuration "${rackName.value}" saved successfully`);
     close();
   } catch (err) {
@@ -488,6 +490,7 @@ async function handleLoad() {
 
     if (rack && rack.config_data) {
       setCurrentSite(selectedSite.value);
+      setCurrentRackName(rack.name); // Set rack name for auto-save
       emit('configLoaded', rack.config_data);
       showToast('success', `Loaded "${rack.name}"`);
       close();
