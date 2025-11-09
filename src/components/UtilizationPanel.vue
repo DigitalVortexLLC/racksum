@@ -56,7 +56,7 @@
         <div class="flex justify-between items-center mb-1">
           <span class="text-sm font-medium" style="color: var(--text-primary);">HVAC</span>
           <span class="text-sm" style="color: var(--text-secondary);">
-            {{ hvacLoad }} / {{ hvacCapacity }} BTU/hr
+            {{ hvacLoadTons }} / {{ hvacCapacityTons }} Tons
           </span>
         </div>
         <div class="w-full rounded-full h-4 overflow-hidden" style="background-color: var(--border-color);">
@@ -150,6 +150,7 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import { useUtilization } from '../composables/useUtilization'
+import { btuToTons } from '../utils/calculations'
 
 const isExpanded = ref(false)
 const unrackedPanelExpanded = inject('unrackedPanelExpanded', ref(true))
@@ -171,6 +172,10 @@ const {
   ruCapacity,
   ruPercentage
 } = useUtilization()
+
+// Convert BTU/hr to Refrigeration Tons for display
+const hvacLoadTons = computed(() => btuToTons(hvacLoad.value).toFixed(1))
+const hvacCapacityTons = computed(() => btuToTons(hvacCapacity.value).toFixed(1))
 
 const getBarColor = (percentage) => {
   if (percentage < 70) return 'bg-green-500'
