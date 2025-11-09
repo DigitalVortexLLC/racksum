@@ -157,7 +157,7 @@
                 <div>
                   <div class="font-medium" style="color: var(--text-primary);">{{ device.name }}</div>
                   <div class="text-sm" style="color: var(--text-secondary);">
-                    {{ device.category }} • {{ device.ruSize }}U • {{ device.powerDraw }}W
+                    {{ device.category }} • {{ device.ruSize }}U • {{ device.powerDraw }}W • {{ device.powerPortsUsed || 1 }} port(s)
                   </div>
                   <div v-if="device.description" class="text-xs mt-1" style="color: var(--text-secondary);">
                     {{ device.description }}
@@ -250,6 +250,7 @@
                   <div class="text-sm" style="color: var(--text-secondary);">
                     <span class="capitalize">{{ provider.type }}</span>
                     <span v-if="provider.powerCapacity > 0"> • {{ provider.powerCapacity }}W</span>
+                    <span v-if="provider.powerPortsCapacity > 0"> • {{ provider.powerPortsCapacity }} ports</span>
                     <span v-if="provider.coolingCapacity > 0"> • {{ (provider.coolingCapacity / 12000).toFixed(1) }} Tons</span>
                     <span v-if="provider.networkCapacity > 0"> • {{ provider.networkCapacity }} Gbps</span>
                   </div>
@@ -630,6 +631,30 @@
         </div>
 
         <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+            Power Ports Used *
+          </label>
+          <input
+            v-model.number="newDevice.powerPortsUsed"
+            type="number"
+            min="0"
+            placeholder="e.g., 2 for dual PSU"
+            class="w-full px-3 py-2 rounded focus:outline-none transition-colors"
+            :style="{
+              border: `1px solid ${validationErrors.powerPortsUsed ? '#ef4444' : 'var(--border-color)'}`,
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-primary)'
+            }"
+          />
+          <p v-if="validationErrors.powerPortsUsed" class="text-xs mt-1" style="color: #ef4444;">
+            {{ validationErrors.powerPortsUsed }}
+          </p>
+          <p v-else class="text-xs mt-1" style="color: var(--text-secondary);">
+            Number of PDU power ports required (1 for single PSU, 2 for dual PSU, etc.)
+          </p>
+        </div>
+
+        <div class="mb-4">
           <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Color</label>
           <div class="flex gap-2 items-center">
             <input
@@ -764,6 +789,24 @@
           </p>
         </div>
 
+        <!-- Power Ports Capacity (shown for power type) -->
+        <div v-if="newProvider.type === 'power'" class="mb-4">
+          <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+            Power Ports Capacity *
+          </label>
+          <input
+            v-model.number="newProvider.powerPortsCapacity"
+            type="number"
+            min="0"
+            placeholder="e.g., 24"
+            class="w-full px-3 py-2 rounded focus:outline-none transition-colors"
+            style="border: 1px solid var(--border-color); background-color: var(--bg-secondary); color: var(--text-primary);"
+          />
+          <p class="text-xs mt-1" style="color: var(--text-secondary);">
+            Number of available power ports on this PDU
+          </p>
+        </div>
+
         <!-- Cooling Capacity (shown for cooling type) -->
         <div v-if="newProvider.type === 'cooling'" class="mb-4">
           <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
@@ -891,6 +934,7 @@ const newDevice = ref({
   category: '',
   ruSize: 1,
   powerDraw: 0,
+  powerPortsUsed: 1,
   color: '',
   description: ''
 });
@@ -906,6 +950,7 @@ const newProvider = ref({
   name: '',
   type: '',
   powerCapacity: 0,
+  powerPortsCapacity: 0,
   coolingCapacityTons: 0,
   networkCapacity: 0,
   location: '',
@@ -920,7 +965,8 @@ const canAddDevice = computed(() => {
   return newDevice.value.name?.trim() &&
          newDevice.value.category &&
          newDevice.value.ruSize > 0 &&
-         newDevice.value.powerDraw >= 0;
+         newDevice.value.powerDraw >= 0 &&
+         newDevice.value.powerPortsUsed >= 0;
 });
 
 const canAddProvider = computed(() => {
@@ -1029,6 +1075,7 @@ function closeDeviceDialog() {
     category: '',
     ruSize: 1,
     powerDraw: 0,
+    powerPortsUsed: 1,
     color: '',
     description: ''
   };
@@ -1115,6 +1162,7 @@ function editDevice(device) {
     category: device.category,
     ruSize: device.ruSize,
     powerDraw: device.powerDraw,
+    powerPortsUsed: device.powerPortsUsed || 1,
     color: device.color,
     description: device.description || ''
   };
@@ -1129,6 +1177,7 @@ function duplicateDevice(device) {
     category: device.category,
     ruSize: device.ruSize,
     powerDraw: device.powerDraw,
+    powerPortsUsed: device.powerPortsUsed || 1,
     color: device.color,
     description: device.description || ''
   };
@@ -1213,6 +1262,7 @@ function closeProviderDialog() {
     name: '',
     type: '',
     powerCapacity: 0,
+    powerPortsCapacity: 0,
     coolingCapacityTons: 0,
     networkCapacity: 0,
     location: '',
@@ -1226,6 +1276,7 @@ function editProvider(provider) {
     name: provider.name,
     type: provider.type,
     powerCapacity: provider.powerCapacity || 0,
+    powerPortsCapacity: provider.powerPortsCapacity || 0,
     coolingCapacityTons: provider.coolingCapacity ? provider.coolingCapacity / 12000 : 0,
     networkCapacity: provider.networkCapacity || 0,
     location: provider.location || '',

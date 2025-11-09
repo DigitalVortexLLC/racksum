@@ -14,6 +14,11 @@ class Device(models.Model):
     category = models.CharField(max_length=100, db_index=True)
     ru_size = models.IntegerField(validators=[MinValueValidator(0)])
     power_draw = models.IntegerField(validators=[MinValueValidator(0)], help_text="Power consumption in watts")
+    power_ports_used = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=1,
+        help_text="Number of PDU power ports required (e.g., 2 for dual PSU)"
+    )
     color = models.CharField(max_length=7, default="#000000", help_text="Hex color code for display")
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -115,6 +120,13 @@ class Rack(models.Model):
     def get_hvac_load(self):
         """Calculate heat load in BTU/hr (1W = 3.41 BTU/hr)"""
         return self.get_power_utilization() * 3.41
+
+    def get_power_ports_used(self):
+        """Calculate total number of PDU power ports used in this rack"""
+        total_ports = 0
+        for rack_device in self.rack_devices.all():
+            total_ports += rack_device.device.power_ports_used
+        return total_ports
 
 
 class RackDevice(models.Model):

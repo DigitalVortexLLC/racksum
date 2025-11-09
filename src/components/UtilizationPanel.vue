@@ -51,6 +51,24 @@
         <div class="text-xs mt-1" style="color: var(--text-secondary);">{{ powerPercentage }}%</div>
       </div>
 
+      <!-- Power Ports Utilization -->
+      <div v-if="powerPortsCapacity > 0" class="mb-4">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-sm font-medium" style="color: var(--text-primary);">Power Ports</span>
+          <span class="text-sm" style="color: var(--text-secondary);">
+            {{ powerPortsUsed }} / {{ powerPortsCapacity }} ports
+          </span>
+        </div>
+        <div class="w-full rounded-full h-4 overflow-hidden" style="background-color: var(--border-color);">
+          <div
+            :class="powerPortsBarColor"
+            :style="{ width: powerPortsPercentage + '%' }"
+            class="h-full transition-all duration-300"
+          ></div>
+        </div>
+        <div class="text-xs mt-1" style="color: var(--text-secondary);">{{ powerPortsPercentage }}%</div>
+      </div>
+
       <!-- HVAC Utilization -->
       <div class="mb-4">
         <div class="flex justify-between items-center mb-1">
@@ -123,6 +141,23 @@
         </div>
       </div>
 
+      <!-- Power Ports Compact -->
+      <div v-if="powerPortsCapacity > 0" class="flex items-center gap-2 group relative">
+        <div class="flex items-center gap-1.5">
+          <!-- Plug icon for power ports -->
+          <svg class="w-5 h-5" style="color: var(--text-primary);" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+          </svg>
+          <!-- Status LED -->
+          <div class="w-2 h-2 rounded-full" :class="powerPortsBarColor"></div>
+        </div>
+        <span class="text-sm font-medium" style="color: var(--text-primary);">{{ powerPortsPercentage }}%</span>
+        <!-- Tooltip -->
+        <div class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          Power Ports
+        </div>
+      </div>
+
       <!-- HVAC Compact -->
       <div class="flex items-center gap-2 group relative">
         <div class="flex items-center gap-1.5">
@@ -183,6 +218,9 @@ const {
   powerUsed,
   powerCapacity,
   powerPercentage,
+  powerPortsUsed,
+  powerPortsCapacity,
+  powerPortsPercentage,
   hvacLoad,
   hvacCapacity,
   hvacPercentage,
@@ -202,11 +240,13 @@ const getBarColor = (percentage) => {
 }
 
 const powerBarColor = computed(() => getBarColor(powerPercentage.value))
+const powerPortsBarColor = computed(() => getBarColor(powerPortsPercentage.value))
 const hvacBarColor = computed(() => getBarColor(hvacPercentage.value))
 const ruBarColor = computed(() => getBarColor(ruPercentage.value))
 
 // Text color versions for icons
 const powerIconColor = computed(() => powerBarColor.value.replace('bg-', 'text-'))
+const powerPortsIconColor = computed(() => powerPortsBarColor.value.replace('bg-', 'text-'))
 const hvacIconColor = computed(() => hvacBarColor.value.replace('bg-', 'text-'))
 const ruIconColor = computed(() => ruBarColor.value.replace('bg-', 'text-'))
 </script>
