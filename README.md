@@ -20,7 +20,8 @@ A web-based tool for planning and visualizing server rack layouts with real-time
 
 - **Frontend**: Vue 3 (Composition API) + Vite
 - **Styling**: Tailwind CSS
-- **Backend**: Node.js + Express
+- **Backend**: Django + Django REST Framework
+- **Database**: MySQL
 - **Drag & Drop**: VueUse composables
 
 ## Installation
@@ -29,6 +30,8 @@ A web-based tool for planning and visualizing server rack layouts with real-time
 
 - Node.js (v18 or higher)
 - npm
+- Python 3.8 or higher
+- MySQL server
 
 ### Setup
 
@@ -37,15 +40,27 @@ A web-based tool for planning and visualizing server rack layouts with real-time
 cd racksum
 ```
 
-2. Install dependencies:
+2. Install Node.js dependencies:
 ```bash
 npm install
 ```
 
-3. (Optional) Configure environment variables:
+3. Set up Python virtual environment and install dependencies:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+4. Configure environment variables:
 ```bash
 cp .env.example .env
-# Edit .env to set PORT (default: 3000)
+# Edit .env to set your MySQL database credentials
+```
+
+5. Run database migrations:
+```bash
+npm run db:init
 ```
 
 ## Development
@@ -67,7 +82,7 @@ The application will be available at [http://localhost:5173](http://localhost:51
 npm run build
 ```
 
-2. Start the Express server:
+2. Start the Django server:
 ```bash
 npm run server
 ```
@@ -78,6 +93,8 @@ npm start
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000)
+
+**Note**: Make sure your Python virtual environment is activated before running the server.
 
 ## Usage
 
@@ -250,29 +267,43 @@ Utilization % = (Used / Capacity) × 100
 
 1. **VPS/Cloud Server**: Copy files and run `npm start`
 2. **Docker**: (Add Dockerfile if needed)
-3. **PM2** (recommended for production):
+3. **Production WSGI Server** (recommended for production):
 ```bash
-npm install -g pm2
-pm2 start server.js --name racksum
-pm2 save
-pm2 startup
+# Install gunicorn
+pip install gunicorn
+
+# Run with gunicorn
+cd backend
+gunicorn backend.wsgi:application --bind 0.0.0.0:3000
+```
+
+Alternatively, use the provided startup script:
+```bash
+chmod +x start_server.sh
+./start_server.sh
 ```
 
 ## Project Structure
 
 ```
 racksum/
-├── server.js              # Express server
+├── backend/             # Django backend
+│   ├── manage.py       # Django management script
+│   ├── backend/        # Django project settings
+│   └── api/            # REST API app
+│       ├── models.py   # Database models
+│       ├── views.py    # API views
+│       └── urls.py     # API routing
 ├── src/
-│   ├── main.js           # Vue entry point
-│   ├── App.vue           # Root component
-│   ├── components/       # Vue components
-│   ├── composables/      # State management
-│   ├── data/            # Device library JSON
-│   ├── utils/           # Utility functions
-│   └── assets/          # Styles
-├── public/              # Static assets
-└── dist/                # Build output
+│   ├── main.js         # Vue entry point
+│   ├── App.vue         # Root component
+│   ├── components/     # Vue components
+│   ├── composables/    # State management
+│   ├── data/          # Device library JSON
+│   ├── utils/         # Utility functions
+│   └── assets/        # Styles
+├── public/            # Static assets
+└── dist/              # Build output
 ```
 
 ## Troubleshooting
@@ -285,11 +316,21 @@ racksum/
 - Ensure you ran `npm run build` first
 - Check that `dist/` directory exists
 - Verify port 3000 is available
+- Ensure Python virtual environment is activated
+- Check Django is installed: `python -m django --version`
+- Verify database connection in `.env` file
 
 ### Devices not loading
 - Check browser console for errors
 - Verify `src/data/devices.json` is valid JSON
 - Check API endpoint: `http://localhost:3000/api/devices`
+- Ensure Django server is running
+
+### Database connection issues
+- Verify MySQL server is running
+- Check database credentials in `.env` file
+- Ensure database exists: `mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS racksum;"`
+- Run migrations: `npm run db:init`
 
 ## License
 
