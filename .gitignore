@@ -47,3 +47,7 @@ dist-python/
 build/
 *.sqlite3
 *.db
+
+# MkDocs
+site/
+.mkdocs_cache/

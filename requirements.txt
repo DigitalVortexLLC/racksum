@@ -5,3 +5,6 @@ djangorestframework==3.16.1
 PyMySQL==1.1.2
 python-dotenv==1.2.1
 sqlparse==0.5.3
+mkdocs==1.5.3
+mkdocs-material==9.5.3
+mkdocs-minify-plugin==0.8.0

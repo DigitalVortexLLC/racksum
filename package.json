@@ -10,7 +10,10 @@
     "server": "cd backend && python manage.py runserver 3000",
     "start": "npm run build && npm run server",
     "db:init": "cd backend && python manage.py migrate",
-    "server:legacy": "node server.js"
+    "server:legacy": "node server.js",
+    "docs:serve": "mkdocs serve",
+    "docs:build": "mkdocs build",
+    "docs:deploy": "mkdocs gh-deploy"
   },
   "keywords": [
     "rack",
