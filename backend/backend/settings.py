@@ -14,6 +14,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import pymysql
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+import logging
 
 # Install PyMySQL as MySQLdb
 pymysql.install_as_MySQLdb()
@@ -23,6 +27,62 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / '.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# Sentry Configuration
+# Configure Sentry for error tracking and performance monitoring
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
+SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0"))
+SENTRY_PROFILES_SAMPLE_RATE = float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.0"))
+SENTRY_ENABLE_LOGGING = os.getenv("SENTRY_ENABLE_LOGGING", "true").lower() == "true"
+SENTRY_LOGGING_LEVEL = os.getenv("SENTRY_LOGGING_LEVEL", "ERROR")
+SENTRY_LOGGING_EVENT_LEVEL = os.getenv("SENTRY_LOGGING_EVENT_LEVEL", "ERROR")
+
+if SENTRY_DSN:
+    # Convert logging level strings to logging constants
+    log_level_map = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+
+    integrations = [
+        DjangoIntegration(
+            transaction_style='url',
+            middleware_spans=True,
+            signals_spans=True,
+            cache_spans=True,
+        ),
+    ]
+
+    # Add logging integration if enabled
+    if SENTRY_ENABLE_LOGGING:
+        integrations.append(
+            LoggingIntegration(
+                level=log_level_map.get(SENTRY_LOGGING_LEVEL.upper(), logging.ERROR),
+                event_level=log_level_map.get(SENTRY_LOGGING_EVENT_LEVEL.upper(), logging.ERROR),
+            )
+        )
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=integrations,
+        # Set traces_sample_rate to capture performance/tracing data
+        # 1.0 = 100% of transactions, 0.0 = 0%
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        # Set profiles_sample_rate to capture performance profiles
+        # This requires traces_sample_rate to be set
+        profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+        # Send default PII (Personally Identifiable Information)
+        # Set to False in production if you want to avoid sending user data
+        send_default_pii=True,
+        # Enable/disable debug mode
+        debug=False,
+    )
 
 
 # Quick-start development settings - unsuitable for production
@@ -49,6 +109,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     # Local apps
     "api",
 ]
@@ -174,6 +235,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Allow URLs without trailing slashes
@@ -196,3 +258,22 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 # MCP Server Configuration
 MCP_ENABLED = os.getenv("MCP_ENABLED", "false").lower() == "true"
 MCP_PORT = int(os.getenv("MCP_PORT", "3001"))
+
+# drf-spectacular settings for OpenAPI/Swagger documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'RackSum API',
+    'DESCRIPTION': 'Datacenter Rack Management API - Manage sites, racks, devices, and resource utilization with WebAuthn/Passkey authentication',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {'name': 'Sites', 'description': 'Physical datacenter site management'},
+        {'name': 'Devices', 'description': 'Device template and type management'},
+        {'name': 'Racks', 'description': 'Rack configuration and management'},
+        {'name': 'Rack Devices', 'description': 'Device placement within racks'},
+        {'name': 'Resource Usage', 'description': 'Power and HVAC resource calculations'},
+        {'name': 'Authentication', 'description': 'WebAuthn/Passkey authentication endpoints'},
+        {'name': 'Legacy', 'description': 'Legacy compatibility endpoints'},
+    ],
+}

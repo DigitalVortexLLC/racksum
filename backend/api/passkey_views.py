@@ -13,6 +13,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 from webauthn import (
     generate_registration_options,
@@ -43,6 +45,24 @@ ORIGIN = os.getenv('WEBAUTHN_ORIGIN', 'http://localhost:3000')
 REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
 
 
+@extend_schema(
+    summary="Get authentication configuration",
+    description="Retrieve authentication settings and ensure CSRF cookie is set for the session",
+    tags=["Authentication"],
+    responses={
+        200: {
+            "description": "Authentication configuration",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "require_auth": False,
+                        "passkey_supported": True
+                    }
+                }
+            }
+        }
+    }
+)
 @ensure_csrf_cookie
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -56,6 +76,32 @@ def auth_config(request):
     })
 
 
+@extend_schema(
+    summary="Begin passkey registration",
+    description="Start the WebAuthn passkey registration process. Creates a new user if needed and generates registration options.",
+    tags=["Authentication"],
+    request={
+        "application/json": {
+            "example": {
+                "username": "john_doe",
+                "email": "john@example.com"
+            }
+        }
+    },
+    responses={
+        200: {
+            "description": "Registration options for WebAuthn ceremony",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "options": "...",
+                        "user_id": 1
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def begin_registration(request):
@@ -128,6 +174,39 @@ def begin_registration(request):
     })
 
 
+@extend_schema(
+    summary="Complete passkey registration",
+    description="Complete the WebAuthn passkey registration by verifying the credential and storing it. Automatically logs the user in.",
+    tags=["Authentication"],
+    request={
+        "application/json": {
+            "example": {
+                "user_id": 1,
+                "credential": {},
+                "name": "My Laptop"
+            }
+        }
+    },
+    responses={
+        200: {
+            "description": "Registration successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Passkey registered successfully",
+                        "passkey_id": 1,
+                        "user": {
+                            "id": 1,
+                            "username": "john_doe",
+                            "email": "john@example.com"
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def complete_registration(request):
@@ -214,6 +293,30 @@ def complete_registration(request):
         )
 
 
+@extend_schema(
+    summary="Begin passkey authentication",
+    description="Start the WebAuthn passkey authentication process. Optionally provide username to authenticate a specific user.",
+    tags=["Authentication"],
+    request={
+        "application/json": {
+            "example": {
+                "username": "john_doe"
+            }
+        }
+    },
+    responses={
+        200: {
+            "description": "Authentication options for WebAuthn ceremony",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "options": "..."
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def begin_authentication(request):
@@ -276,6 +379,36 @@ def begin_authentication(request):
     })
 
 
+@extend_schema(
+    summary="Complete passkey authentication",
+    description="Complete the WebAuthn passkey authentication by verifying the credential. Logs the user in on success.",
+    tags=["Authentication"],
+    request={
+        "application/json": {
+            "example": {
+                "credential": {}
+            }
+        }
+    },
+    responses={
+        200: {
+            "description": "Authentication successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Authentication successful",
+                        "user": {
+                            "id": 1,
+                            "username": "john_doe",
+                            "email": "john@example.com"
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def complete_authentication(request):
@@ -368,6 +501,31 @@ def complete_authentication(request):
         )
 
 
+@extend_schema(
+    summary="List user's passkeys",
+    description="Retrieve all passkeys registered for the authenticated user",
+    tags=["Authentication"],
+    responses={
+        200: {
+            "description": "List of passkeys",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "passkeys": [
+                            {
+                                "id": 1,
+                                "name": "My Laptop",
+                                "created_at": "2024-11-09T10:00:00Z",
+                                "last_used_at": "2024-11-09T12:00:00Z",
+                                "aaguid": "..."
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_passkeys(request):
@@ -390,6 +548,25 @@ def list_passkeys(request):
     })
 
 
+@extend_schema(
+    summary="Delete a passkey",
+    description="Delete a specific passkey belonging to the authenticated user",
+    tags=["Authentication"],
+    parameters=[OpenApiParameter(name="passkey_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    responses={
+        200: {
+            "description": "Passkey deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Passkey deleted successfully"
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_passkey(request, passkey_id):
@@ -411,6 +588,24 @@ def delete_passkey(request, passkey_id):
         )
 
 
+@extend_schema(
+    summary="Logout user",
+    description="Logout the current authenticated user and end their session",
+    tags=["Authentication"],
+    responses={
+        200: {
+            "description": "Logged out successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Logged out successfully"
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
@@ -424,6 +619,27 @@ def logout_view(request):
     })
 
 
+@extend_schema(
+    summary="Get current user",
+    description="Retrieve information about the current authenticated user",
+    tags=["Authentication"],
+    responses={
+        200: {
+            "description": "Current user information",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "user": {
+                            "id": 1,
+                            "username": "john_doe",
+                            "email": "john@example.com"
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def current_user(request):

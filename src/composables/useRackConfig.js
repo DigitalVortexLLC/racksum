@@ -246,6 +246,39 @@ export function useRackConfig() {
     config.value = createDefaultConfig()
   }
 
+  const addRack = () => {
+    const rackCount = config.value.racks.length
+    const newRack = {
+      id: `rack-${Date.now()}`,
+      name: `Rack ${rackCount + 1}`,
+      devices: []
+    }
+    config.value.racks.push(newRack)
+    return newRack
+  }
+
+  const deleteRack = (rackId, moveDevicesToUnracked = true) => {
+    const rack = config.value.racks.find(r => r.id === rackId)
+    if (!rack) return false
+
+    if (moveDevicesToUnracked && rack.devices.length > 0) {
+      // Move all devices to unracked
+      if (!config.value.unrackedDevices) {
+        config.value.unrackedDevices = []
+      }
+      rack.devices.forEach(device => {
+        config.value.unrackedDevices.push({
+          ...device,
+          position: undefined // Remove position info
+        })
+      })
+    }
+
+    // Remove the rack
+    config.value.racks = config.value.racks.filter(r => r.id !== rackId)
+    return true
+  }
+
   return {
     config,
     racks,
@@ -259,6 +292,8 @@ export function useRackConfig() {
     addUnrackedDevice,
     removeUnrackedDevice,
     loadConfiguration,
-    resetConfiguration
+    resetConfiguration,
+    addRack,
+    deleteRack
   }
 }

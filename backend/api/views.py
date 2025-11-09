@@ -10,6 +10,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 from .models import Site, RackConfiguration, Device, Rack, RackDevice
 from .serializers import (
@@ -24,6 +26,45 @@ from .serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all sites",
+        description="Retrieve a list of all datacenter sites",
+        tags=["Sites"]
+    ),
+    retrieve=extend_schema(
+        summary="Get site details",
+        description="Retrieve details of a specific datacenter site by ID",
+        tags=["Sites"]
+    ),
+    create=extend_schema(
+        summary="Create a new site",
+        description="Create a new datacenter site with a unique name",
+        tags=["Sites"],
+        examples=[
+            OpenApiExample(
+                "Site creation example",
+                value={"name": "Data Center East", "description": "Primary east coast facility"},
+                request_only=True
+            )
+        ]
+    ),
+    update=extend_schema(
+        summary="Update a site",
+        description="Update an existing datacenter site",
+        tags=["Sites"]
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a site",
+        description="Partially update an existing datacenter site",
+        tags=["Sites"]
+    ),
+    destroy=extend_schema(
+        summary="Delete a site",
+        description="Delete a datacenter site and all associated racks",
+        tags=["Sites"]
+    )
+)
 class SiteViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Site CRUD operations
@@ -99,6 +140,30 @@ class SiteViewSet(viewsets.ModelViewSet):
         })
 
 
+@extend_schema(
+    summary="List or create rack configurations",
+    description="GET: List all rack configurations for a site. POST: Create or update a rack configuration",
+    tags=["Legacy"],
+    parameters=[
+        OpenApiParameter(
+            name="site_id",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.PATH,
+            description="Site ID"
+        )
+    ],
+    examples=[
+        OpenApiExample(
+            "Create rack configuration",
+            value={
+                "name": "Rack A1",
+                "description": "Production rack",
+                "configData": {"devices": [], "height": 42}
+            },
+            request_only=True
+        )
+    ]
+)
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def rack_operations_view(request, site_id):
@@ -168,6 +233,15 @@ def rack_operations_view(request, site_id):
             )
 
 
+@extend_schema(
+    summary="Get specific rack configuration",
+    description="Retrieve a specific rack configuration by site ID and rack name",
+    tags=["Legacy"],
+    parameters=[
+        OpenApiParameter(name="site_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        OpenApiParameter(name="rack_name", type=OpenApiTypes.STR, location=OpenApiParameter.PATH)
+    ]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_rack_configuration(request, site_id, rack_name):
@@ -196,6 +270,12 @@ def get_rack_configuration(request, site_id, rack_name):
         )
 
 
+@extend_schema(
+    summary="Delete rack configuration",
+    description="Delete a rack configuration by ID",
+    tags=["Legacy"],
+    parameters=[OpenApiParameter(name="rack_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)]
+)
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def delete_rack_configuration(request, rack_id):
@@ -216,6 +296,11 @@ def delete_rack_configuration(request, rack_id):
         )
 
 
+@extend_schema(
+    summary="Get all rack configurations",
+    description="Retrieve all rack configurations across all sites",
+    tags=["Legacy"]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_all_racks(request):
@@ -233,6 +318,11 @@ def get_all_racks(request):
         )
 
 
+@extend_schema(
+    summary="Load rack configuration",
+    description="Load and process rack configuration data (legacy compatibility endpoint)",
+    tags=["Legacy"]
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def load_rack_config(request):
@@ -261,6 +351,11 @@ def load_rack_config(request):
         )
 
 
+@extend_schema(
+    summary="Get devices from JSON file",
+    description="Retrieve device templates from the static devices.json file (legacy compatibility)",
+    tags=["Legacy"]
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_devices(request):
@@ -286,6 +381,53 @@ def get_devices(request):
 
 # ==================== Device Management Endpoints ====================
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all devices",
+        description="Retrieve a list of all device templates from the database",
+        tags=["Devices"]
+    ),
+    retrieve=extend_schema(
+        summary="Get device details",
+        description="Retrieve details of a specific device template by ID",
+        tags=["Devices"]
+    ),
+    create=extend_schema(
+        summary="Create a new device",
+        description="Create a new device template with specifications",
+        tags=["Devices"],
+        examples=[
+            OpenApiExample(
+                "Device creation example",
+                value={
+                    "device_id": "custom-server-01",
+                    "name": "Custom Server",
+                    "category": "server",
+                    "ru_size": 2,
+                    "power_draw": 500,
+                    "color": "#4CAF50",
+                    "description": "Custom 2U server"
+                },
+                request_only=True
+            )
+        ]
+    ),
+    update=extend_schema(
+        summary="Update a device",
+        description="Update an existing device template",
+        tags=["Devices"]
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a device",
+        description="Partially update an existing device template",
+        tags=["Devices"]
+    ),
+    destroy=extend_schema(
+        summary="Delete a device",
+        description="Delete a device template from the database",
+        tags=["Devices"]
+    )
+)
 class DeviceViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Device CRUD operations
@@ -316,6 +458,42 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
 # ==================== Rack Management Endpoints ====================
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all racks",
+        description="Retrieve a list of all racks, optionally filtered by site",
+        tags=["Racks"],
+        parameters=[
+            OpenApiParameter(
+                name="site_id",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="Filter racks by site ID",
+                required=False
+            )
+        ]
+    ),
+    retrieve=extend_schema(
+        summary="Get rack details",
+        description="Retrieve details of a specific rack including all devices",
+        tags=["Racks"]
+    ),
+    update=extend_schema(
+        summary="Update a rack",
+        description="Update an existing rack",
+        tags=["Racks"]
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a rack",
+        description="Partially update an existing rack",
+        tags=["Racks"]
+    ),
+    destroy=extend_schema(
+        summary="Delete a rack",
+        description="Delete a rack and all associated device placements",
+        tags=["Racks"]
+    )
+)
 class RackViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Rack CRUD operations
@@ -335,6 +513,20 @@ class RackViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@extend_schema(
+    summary="Create a rack for a site",
+    description="Create a new rack for a specific site",
+    tags=["Racks"],
+    request=RackCreateSerializer,
+    parameters=[OpenApiParameter(name="site_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    examples=[
+        OpenApiExample(
+            "Rack creation example",
+            value={"name": "Rack A1", "ru_height": 42, "description": "Production rack"},
+            request_only=True
+        )
+    ]
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_rack(request, site_id):
@@ -368,6 +560,20 @@ def create_rack(request, site_id):
         )
 
 
+@extend_schema(
+    summary="Add device to rack",
+    description="Place a device in a specific rack at a given position",
+    tags=["Rack Devices"],
+    request=RackDeviceCreateSerializer,
+    parameters=[OpenApiParameter(name="rack_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    examples=[
+        OpenApiExample(
+            "Add device example",
+            value={"device_id": 1, "position": 1, "instance_name": "Web Server 01"},
+            request_only=True
+        )
+    ]
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def add_device_to_rack(request, rack_id):
@@ -404,6 +610,12 @@ def add_device_to_rack(request, rack_id):
         )
 
 
+@extend_schema(
+    summary="Remove device from rack",
+    description="Remove a device placement from a rack",
+    tags=["Rack Devices"],
+    parameters=[OpenApiParameter(name="rack_device_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)]
+)
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def remove_device_from_rack(request, rack_device_id):
@@ -426,6 +638,29 @@ def remove_device_from_rack(request, rack_device_id):
 
 # ==================== Resource Usage Endpoints ====================
 
+@extend_schema(
+    summary="Get site resource usage",
+    description="Calculate total power draw and HVAC load for all racks in a site",
+    tags=["Resource Usage"],
+    parameters=[OpenApiParameter(name="site_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    responses={
+        200: {
+            "description": "Resource usage data",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "site_id": 1,
+                        "site_name": "Data Center East",
+                        "total_power_draw": 15000,
+                        "total_hvac_load": 51150,
+                        "rack_count": 5,
+                        "racks": []
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_site_resource_usage(request, site_id):
@@ -472,6 +707,30 @@ def get_site_resource_usage(request, site_id):
         )
 
 
+@extend_schema(
+    summary="Get rack resource usage",
+    description="Calculate power draw and HVAC load for all devices in a rack",
+    tags=["Resource Usage"],
+    parameters=[OpenApiParameter(name="rack_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    responses={
+        200: {
+            "description": "Rack resource usage data",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "rack_id": 1,
+                        "rack_name": "Rack A1",
+                        "site_name": "Data Center East",
+                        "total_power_draw": 3000,
+                        "total_hvac_load": 10230,
+                        "ru_height": 42,
+                        "devices": []
+                    }
+                }
+            }
+        }
+    }
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_rack_resource_usage(request, rack_id):

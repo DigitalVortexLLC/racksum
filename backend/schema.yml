@@ -1,0 +1,1410 @@
+openapi: 3.0.3
+info:
+  title: RackSum API
+  version: 1.0.0
+  description: Datacenter Rack Management API - Manage sites, racks, devices, and
+    resource utilization with WebAuthn/Passkey authentication
+paths:
+  /api/auth/config:
+    get:
+      operationId: auth_config_retrieve
+      description: Retrieve authentication settings and ensure CSRF cookie is set
+        for the session
+      summary: Get authentication configuration
+      tags:
+      - Authentication
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Authentication configuration
+                content:
+                  application/json:
+                    example:
+                      require_auth: false
+                      passkey_supported: true
+          description: ''
+  /api/auth/logout:
+    post:
+      operationId: auth_logout_create
+      description: Logout the current authenticated user and end their session
+      summary: Logout user
+      tags:
+      - Authentication
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Logged out successfully
+                content:
+                  application/json:
+                    example:
+                      success: true
+                      message: Logged out successfully
+          description: ''
+  /api/auth/passkey/{passkey_id}:
+    delete:
+      operationId: auth_passkey_destroy
+      description: Delete a specific passkey belonging to the authenticated user
+      summary: Delete a passkey
+      parameters:
+      - in: path
+        name: passkey_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Authentication
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Passkey deleted successfully
+                content:
+                  application/json:
+                    example:
+                      success: true
+                      message: Passkey deleted successfully
+          description: ''
+  /api/auth/passkey/list:
+    get:
+      operationId: auth_passkey_list_retrieve
+      description: Retrieve all passkeys registered for the authenticated user
+      summary: List user's passkeys
+      tags:
+      - Authentication
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: List of passkeys
+                content:
+                  application/json:
+                    example:
+                      passkeys:
+                      - id: 1
+                        name: My Laptop
+                        created_at: '2024-11-09T10:00:00Z'
+                        last_used_at: '2024-11-09T12:00:00Z'
+                        aaguid: '...'
+          description: ''
+  /api/auth/passkey/login/begin:
+    post:
+      operationId: auth_passkey_login_begin_create
+      description: Start the WebAuthn passkey authentication process. Optionally provide
+        username to authenticate a specific user.
+      summary: Begin passkey authentication
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              example:
+                username: john_doe
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Authentication options for WebAuthn ceremony
+                content:
+                  application/json:
+                    example:
+                      options: '...'
+          description: ''
+  /api/auth/passkey/login/complete:
+    post:
+      operationId: auth_passkey_login_complete_create
+      description: Complete the WebAuthn passkey authentication by verifying the credential.
+        Logs the user in on success.
+      summary: Complete passkey authentication
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              example:
+                credential: {}
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Authentication successful
+                content:
+                  application/json:
+                    example:
+                      success: true
+                      message: Authentication successful
+                      user:
+                        id: 1
+                        username: john_doe
+                        email: john@example.com
+          description: ''
+  /api/auth/passkey/register/begin:
+    post:
+      operationId: auth_passkey_register_begin_create
+      description: Start the WebAuthn passkey registration process. Creates a new
+        user if needed and generates registration options.
+      summary: Begin passkey registration
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              example:
+                username: john_doe
+                email: john@example.com
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Registration options for WebAuthn ceremony
+                content:
+                  application/json:
+                    example:
+                      options: '...'
+                      user_id: 1
+          description: ''
+  /api/auth/passkey/register/complete:
+    post:
+      operationId: auth_passkey_register_complete_create
+      description: Complete the WebAuthn passkey registration by verifying the credential
+        and storing it. Automatically logs the user in.
+      summary: Complete passkey registration
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              example:
+                user_id: 1
+                credential: {}
+                name: My Laptop
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Registration successful
+                content:
+                  application/json:
+                    example:
+                      success: true
+                      message: Passkey registered successfully
+                      passkey_id: 1
+                      user:
+                        id: 1
+                        username: john_doe
+                        email: john@example.com
+          description: ''
+  /api/auth/user:
+    get:
+      operationId: auth_user_retrieve
+      description: Retrieve information about the current authenticated user
+      summary: Get current user
+      tags:
+      - Authentication
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Current user information
+                content:
+                  application/json:
+                    example:
+                      user:
+                        id: 1
+                        username: john_doe
+                        email: john@example.com
+          description: ''
+  /api/devices:
+    get:
+      operationId: devices_list
+      description: Retrieve a list of all device templates from the database
+      summary: List all devices
+      tags:
+      - Devices
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+          description: ''
+    post:
+      operationId: devices_create
+      description: Create a new device template with specifications
+      summary: Create a new device
+      tags:
+      - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+            examples:
+              DeviceCreationExample:
+                value:
+                  device_id: custom-server-01
+                  name: Custom Server
+                  category: server
+                  ru_size: 2
+                  power_draw: 500
+                  color: '#4CAF50'
+                  description: Custom 2U server
+                summary: Device creation example
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/devices-json:
+    get:
+      operationId: devices_json_retrieve
+      description: Retrieve device templates from the static devices.json file (legacy
+        compatibility)
+      summary: Get devices from JSON file
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/devices/{id}:
+    get:
+      operationId: devices_retrieve
+      description: Retrieve details of a specific device template by ID
+      summary: Get device details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - Devices
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    put:
+      operationId: devices_update
+      description: Update an existing device template
+      summary: Update a device
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    patch:
+      operationId: devices_partial_update
+      description: Partially update an existing device template
+      summary: Partially update a device
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    delete:
+      operationId: devices_destroy
+      description: Delete a device template from the database
+      summary: Delete a device
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - Devices
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/load:
+    post:
+      operationId: load_create
+      description: Load and process rack configuration data (legacy compatibility
+        endpoint)
+      summary: Load rack configuration
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/rack-configs:
+    get:
+      operationId: rack_configs_retrieve
+      description: Retrieve all rack configurations across all sites
+      summary: Get all rack configurations
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/rack-configs/{rack_id}:
+    delete:
+      operationId: rack_configs_destroy
+      description: Delete a rack configuration by ID
+      summary: Delete rack configuration
+      parameters:
+      - in: path
+        name: rack_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/rack-devices/{rack_device_id}:
+    delete:
+      operationId: rack_devices_destroy
+      description: Remove a device placement from a rack
+      summary: Remove device from rack
+      parameters:
+      - in: path
+        name: rack_device_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rack Devices
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/racks:
+    get:
+      operationId: racks_list
+      description: Retrieve a list of all racks, optionally filtered by site
+      summary: List all racks
+      parameters:
+      - in: query
+        name: site_id
+        schema:
+          type: integer
+        description: Filter racks by site ID
+      tags:
+      - Racks
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rack'
+          description: ''
+    post:
+      operationId: racks_create
+      description: ViewSet for Rack CRUD operations
+      tags:
+      - racks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rack'
+          description: ''
+  /api/racks/{id}:
+    get:
+      operationId: racks_retrieve
+      description: Retrieve details of a specific rack including all devices
+      summary: Get rack details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this rack.
+        required: true
+      tags:
+      - Racks
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rack'
+          description: ''
+    put:
+      operationId: racks_update
+      description: Update an existing rack
+      summary: Update a rack
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this rack.
+        required: true
+      tags:
+      - Racks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rack'
+          description: ''
+    patch:
+      operationId: racks_partial_update
+      description: Partially update an existing rack
+      summary: Partially update a rack
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this rack.
+        required: true
+      tags:
+      - Racks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRackRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rack'
+          description: ''
+    delete:
+      operationId: racks_destroy
+      description: Delete a rack and all associated device placements
+      summary: Delete a rack
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this rack.
+        required: true
+      tags:
+      - Racks
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/racks/{rack_id}/add-device:
+    post:
+      operationId: racks_add_device_create
+      description: Place a device in a specific rack at a given position
+      summary: Add device to rack
+      parameters:
+      - in: path
+        name: rack_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rack Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackDeviceCreateRequest'
+            examples:
+              AddDeviceExample:
+                value:
+                  device_id: 1
+                  position: 1
+                  instance_name: Web Server 01
+                summary: Add device example
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/racks/{rack_id}/resource-usage:
+    get:
+      operationId: racks_resource_usage_retrieve
+      description: Calculate power draw and HVAC load for all devices in a rack
+      summary: Get rack resource usage
+      parameters:
+      - in: path
+        name: rack_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Resource Usage
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Rack resource usage data
+                content:
+                  application/json:
+                    example:
+                      rack_id: 1
+                      rack_name: Rack A1
+                      site_name: Data Center East
+                      total_power_draw: 3000
+                      total_hvac_load: 10230
+                      ru_height: 42
+                      devices: []
+          description: ''
+  /api/sites:
+    get:
+      operationId: sites_list
+      description: Retrieve a list of all datacenter sites
+      summary: List all sites
+      tags:
+      - Sites
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+          description: ''
+    post:
+      operationId: sites_create
+      description: Create a new datacenter site with a unique name
+      summary: Create a new site
+      tags:
+      - Sites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+            examples:
+              SiteCreationExample:
+                value:
+                  name: Data Center East
+                  description: Primary east coast facility
+                summary: Site creation example
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+          description: ''
+  /api/sites/{id}:
+    get:
+      operationId: sites_retrieve
+      description: Retrieve details of a specific datacenter site by ID
+      summary: Get site details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this site.
+        required: true
+      tags:
+      - Sites
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+          description: ''
+    put:
+      operationId: sites_update
+      description: Update an existing datacenter site
+      summary: Update a site
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this site.
+        required: true
+      tags:
+      - Sites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+          description: ''
+    patch:
+      operationId: sites_partial_update
+      description: Partially update an existing datacenter site
+      summary: Partially update a site
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this site.
+        required: true
+      tags:
+      - Sites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSiteRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+          description: ''
+    delete:
+      operationId: sites_destroy
+      description: Delete a datacenter site and all associated racks
+      summary: Delete a site
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this site.
+        required: true
+      tags:
+      - Sites
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/sites/{site_id}/create-rack:
+    post:
+      operationId: sites_create_rack_create
+      description: Create a new rack for a specific site
+      summary: Create a rack for a site
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Racks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackCreateRequest'
+            examples:
+              RackCreationExample:
+                value:
+                  name: Rack A1
+                  ru_height: 42
+                  description: Production rack
+                summary: Rack creation example
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/sites/{site_id}/racks:
+    get:
+      operationId: sites_racks_retrieve
+      description: 'GET: List all rack configurations for a site. POST: Create or
+        update a rack configuration'
+      summary: List or create rack configurations
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        description: Site ID
+        required: true
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: sites_racks_create
+      description: 'GET: List all rack configurations for a site. POST: Create or
+        update a rack configuration'
+      summary: List or create rack configurations
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        description: Site ID
+        required: true
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/sites/{site_id}/racks/{rack_name}:
+    get:
+      operationId: sites_racks_retrieve_2
+      description: Retrieve a specific rack configuration by site ID and rack name
+      summary: Get specific rack configuration
+      parameters:
+      - in: path
+        name: rack_name
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Legacy
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/sites/{site_id}/resource-usage:
+    get:
+      operationId: sites_resource_usage_retrieve
+      description: Calculate total power draw and HVAC load for all racks in a site
+      summary: Get site resource usage
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Resource Usage
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Resource usage data
+                content:
+                  application/json:
+                    example:
+                      site_id: 1
+                      site_name: Data Center East
+                      total_power_draw: 15000
+                      total_hvac_load: 51150
+                      rack_count: 5
+                      racks: []
+          description: ''
+components:
+  schemas:
+    Device:
+      type: object
+      description: Serializer for Device model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        device_id:
+          type: string
+          maxLength: 255
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        ru_size:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        power_draw:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Power consumption in watts
+        color:
+          type: string
+          description: Hex color code for display
+          maxLength: 7
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - device_id
+      - id
+      - name
+      - power_draw
+      - ru_size
+      - updated_at
+    DeviceRequest:
+      type: object
+      description: Serializer for Device model
+      properties:
+        device_id:
+          type: string
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ru_size:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        power_draw:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Power consumption in watts
+        color:
+          type: string
+          minLength: 1
+          description: Hex color code for display
+          maxLength: 7
+        description:
+          type: string
+          nullable: true
+      required:
+      - category
+      - device_id
+      - name
+      - power_draw
+      - ru_size
+    PatchedDeviceRequest:
+      type: object
+      description: Serializer for Device model
+      properties:
+        device_id:
+          type: string
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ru_size:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        power_draw:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Power consumption in watts
+        color:
+          type: string
+          minLength: 1
+          description: Hex color code for display
+          maxLength: 7
+        description:
+          type: string
+          nullable: true
+    PatchedRackRequest:
+      type: object
+      description: Serializer for Rack with nested devices
+      properties:
+        site:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        ru_height:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        description:
+          type: string
+          nullable: true
+    PatchedSiteRequest:
+      type: object
+      description: Serializer for Site model
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+    Rack:
+      type: object
+      description: Serializer for Rack with nested devices
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        ru_height:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        description:
+          type: string
+          nullable: true
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/RackDevice'
+          readOnly: true
+        power_utilization:
+          type: string
+          readOnly: true
+        hvac_load:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - devices
+      - hvac_load
+      - id
+      - name
+      - power_utilization
+      - site
+      - site_name
+      - updated_at
+    RackCreateRequest:
+      type: object
+      description: Serializer for creating Rack instances
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        ru_height:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        description:
+          type: string
+          nullable: true
+      required:
+      - name
+    RackDevice:
+      type: object
+      description: Serializer for RackDevice with nested device information
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        rack:
+          type: integer
+        device:
+          type: integer
+        device_info:
+          allOf:
+          - $ref: '#/components/schemas/Device'
+          readOnly: true
+        device_name:
+          type: string
+          readOnly: true
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          description: Starting RU position (1-based)
+        instance_name:
+          type: string
+          nullable: true
+          description: Custom name for this device instance
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - device
+      - device_info
+      - device_name
+      - id
+      - position
+      - rack
+      - updated_at
+    RackDeviceCreateRequest:
+      type: object
+      description: Serializer for creating RackDevice instances
+      properties:
+        device:
+          type: integer
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          description: Starting RU position (1-based)
+        instance_name:
+          type: string
+          nullable: true
+          description: Custom name for this device instance
+          maxLength: 255
+      required:
+      - device
+      - position
+    RackDeviceRequest:
+      type: object
+      description: Serializer for RackDevice with nested device information
+      properties:
+        rack:
+          type: integer
+        device:
+          type: integer
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          description: Starting RU position (1-based)
+        instance_name:
+          type: string
+          nullable: true
+          description: Custom name for this device instance
+          maxLength: 255
+      required:
+      - device
+      - position
+      - rack
+    RackRequest:
+      type: object
+      description: Serializer for Rack with nested devices
+      properties:
+        site:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        ru_height:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        description:
+          type: string
+          nullable: true
+      required:
+      - name
+      - site
+    Site:
+      type: object
+      description: Serializer for Site model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    SiteRequest:
+      type: object
+      description: Serializer for Site model
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+      required:
+      - name
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+tags:
+- name: Sites
+  description: Physical datacenter site management
+- name: Devices
+  description: Device template and type management
+- name: Racks
+  description: Rack configuration and management
+- name: Rack Devices
+  description: Device placement within racks
+- name: Resource Usage
+  description: Power and HVAC resource calculations
+- name: Authentication
+  description: WebAuthn/Passkey authentication endpoints
+- name: Legacy
+  description: Legacy compatibility endpoints

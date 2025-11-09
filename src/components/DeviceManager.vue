@@ -11,8 +11,8 @@
           @click="$emit('close')"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -72,8 +72,8 @@
               @click="showAddGroupDialog = true"
               class="px-4 py-2 rounded transition-colors font-medium text-white"
               style="background-color: var(--color-primary);"
-              @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-dark)'"
-              @mouseout="$event.target.style.backgroundColor = 'var(--color-primary)'"
+              @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'"
+              @mouseout="$event.currentTarget.style.backgroundColor = 'var(--color-primary)'"
             >
               Add Device Group
             </button>
@@ -101,8 +101,8 @@
                   @click="editGroup(group)"
                   class="p-2 rounded transition-colors"
                   style="color: var(--color-primary);"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Edit group"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,8 +113,8 @@
                   @click="deleteGroup(group.id)"
                   class="p-2 rounded transition-colors"
                   style="color: #ef4444;"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Delete group"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,8 +133,8 @@
               @click="showAddDeviceDialog = true"
               class="px-4 py-2 rounded transition-colors font-medium text-white"
               style="background-color: var(--color-primary);"
-              @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-dark)'"
-              @mouseout="$event.target.style.backgroundColor = 'var(--color-primary)'"
+              @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'"
+              @mouseout="$event.currentTarget.style.backgroundColor = 'var(--color-primary)'"
             >
               Add Device
             </button>
@@ -169,8 +169,8 @@
                   @click="duplicateDevice(device)"
                   class="p-2 rounded transition-colors"
                   style="color: var(--text-secondary);"
-                  @mouseover="$event.target.style.backgroundColor = 'var(--border-color)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'var(--border-color)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Duplicate device"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,8 +181,8 @@
                   @click="editDevice(device)"
                   class="p-2 rounded transition-colors"
                   style="color: var(--color-primary);"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Edit device"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,8 +193,8 @@
                   @click="deleteDevice(device.id)"
                   class="p-2 rounded transition-colors"
                   style="color: #ef4444;"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Delete device"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,8 +219,8 @@
               @click="showAddProviderDialog = true"
               class="px-4 py-2 rounded transition-colors font-medium text-white"
               style="background-color: var(--color-primary);"
-              @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-dark)'"
-              @mouseout="$event.target.style.backgroundColor = 'var(--color-primary)'"
+              @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'"
+              @mouseout="$event.currentTarget.style.backgroundColor = 'var(--color-primary)'"
             >
               Add Resource Provider
             </button>
@@ -266,8 +266,8 @@
                   @click="editProvider(provider)"
                   class="p-2 rounded transition-colors"
                   style="color: var(--color-primary);"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Edit provider"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,8 +278,8 @@
                   @click="deleteProvider(provider.id)"
                   class="p-2 rounded transition-colors"
                   style="color: #ef4444;"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                   title="Delete provider"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,8 +311,8 @@
                   @click="exportDevices"
                   class="px-4 py-2 rounded transition-colors font-medium text-white"
                   style="background-color: var(--color-primary);"
-                  @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-dark)'"
-                  @mouseout="$event.target.style.backgroundColor = 'var(--color-primary)'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'var(--color-primary)'"
                 >
                   <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -375,8 +375,8 @@
                 @click="$refs.fileInput.click()"
                 class="px-4 py-2 rounded transition-colors font-medium"
                 style="background-color: var(--color-primary); color: #0c0c0d;"
-                @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-dark)'"
-                @mouseout="$event.target.style.backgroundColor = 'var(--color-primary)'"
+                @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'"
+                @mouseout="$event.currentTarget.style.backgroundColor = 'var(--color-primary)'"
               >
                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -442,8 +442,8 @@
           @click="closeGroupDialog"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -486,8 +486,8 @@
             @click="closeGroupDialog"
             class="flex-1 px-4 py-2 rounded transition-colors"
             style="background-color: var(--bg-secondary); color: var(--text-primary);"
-            @mouseover="$event.target.style.backgroundColor = 'var(--border-color)'"
-            @mouseout="$event.target.style.backgroundColor = 'var(--bg-secondary)'"
+            @mouseover="$event.currentTarget.style.backgroundColor = 'var(--border-color)'"
+            @mouseout="$event.currentTarget.style.backgroundColor = 'var(--bg-secondary)'"
           >
             Cancel
           </button>
@@ -524,8 +524,8 @@
           @click="closeDeviceDialog"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -666,8 +666,8 @@
             @click="closeDeviceDialog"
             class="flex-1 px-4 py-2 rounded transition-colors"
             style="background-color: var(--bg-secondary); color: var(--text-primary);"
-            @mouseover="$event.target.style.backgroundColor = 'var(--border-color)'"
-            @mouseout="$event.target.style.backgroundColor = 'var(--bg-secondary)'"
+            @mouseover="$event.currentTarget.style.backgroundColor = 'var(--border-color)'"
+            @mouseout="$event.currentTarget.style.backgroundColor = 'var(--bg-secondary)'"
           >
             Cancel
           </button>
@@ -704,8 +704,8 @@
           @click="closeProviderDialog"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -833,8 +833,8 @@
             @click="closeProviderDialog"
             class="flex-1 px-4 py-2 rounded transition-colors"
             style="background-color: var(--bg-secondary); color: var(--text-primary);"
-            @mouseover="$event.target.style.backgroundColor = 'var(--border-color)'"
-            @mouseout="$event.target.style.backgroundColor = 'var(--bg-secondary)'"
+            @mouseover="$event.currentTarget.style.backgroundColor = 'var(--border-color)'"
+            @mouseout="$event.currentTarget.style.backgroundColor = 'var(--bg-secondary)'"
           >
             Cancel
           </button>

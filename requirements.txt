@@ -2,6 +2,7 @@ asgiref==3.10.0
 Django==5.2.8
 django-cors-headers==4.9.0
 djangorestframework==3.16.1
+drf-spectacular==0.27.2
 PyMySQL==1.1.2
 python-dotenv==1.2.1
 sqlparse==0.5.3
@@ -13,3 +14,5 @@ webauthn==2.3.0
 cbor2==5.6.5
 # MCP Server support
 mcp==1.1.2
+# Sentry error tracking
+sentry-sdk[django]==2.21.0
