@@ -8,3 +8,6 @@ sqlparse==0.5.3
 mkdocs==1.5.3
 mkdocs-material==9.5.3
 mkdocs-minify-plugin==0.8.0
+# WebAuthn/Passkey support
+webauthn==2.3.0
+cbor2==5.6.5

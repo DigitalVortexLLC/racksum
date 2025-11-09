@@ -1,7 +1,8 @@
 <template>
   <div
     v-if="visible"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-200"
+    class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-200"
+    style="background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px);"
     @click.self="close"
   >
     <div class="rounded-xl shadow-2xl w-full max-w-xl transform transition-all duration-200" style="background-color: var(--bg-primary);">
@@ -236,7 +237,8 @@
   <!-- New Site Dialog -->
   <div
     v-if="showNewSiteDialog"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-200"
+    class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-200"
+    style="background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px);"
     @click.self="showNewSiteDialog = false"
   >
     <div class="rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-200" style="background-color: var(--bg-primary);">

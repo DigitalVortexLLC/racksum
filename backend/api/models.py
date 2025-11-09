@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Device(models.Model):
@@ -148,3 +151,68 @@ class RackDevice(models.Model):
     def __str__(self):
         name = self.instance_name or self.device.name
         return f"{self.rack.name} - {name} @ RU{self.position}"
+
+class Passkey(models.Model):
+    """
+    Stores WebAuthn/FIDO2 passkey credentials for passwordless authentication
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='passkeys'
+    )
+    credential_id = models.TextField(unique=True, db_index=True, help_text="Base64-encoded credential ID")
+    public_key = models.TextField(help_text="Base64-encoded public key")
+    sign_count = models.IntegerField(default=0, help_text="Signature counter for replay protection")
+    transports = models.JSONField(default=list, blank=True, help_text="Supported transports (usb, nfc, ble, internal)")
+    aaguid = models.CharField(max_length=255, blank=True, help_text="Authenticator AAGUID")
+    name = models.CharField(max_length=255, help_text="User-friendly name for this passkey")
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'passkeys'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['credential_id']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"
+
+
+class PasskeyChallenge(models.Model):
+    """
+    Temporary storage for WebAuthn challenges during registration/authentication
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='passkey_challenges',
+        null=True,
+        blank=True
+    )
+    challenge = models.TextField(help_text="Base64-encoded challenge")
+    challenge_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('registration', 'Registration'),
+            ('authentication', 'Authentication'),
+        ]
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="Challenge expiration time")
+
+    class Meta:
+        db_table = 'passkey_challenges'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['challenge']),
+            models.Index(fields=['expires_at']),
+        ]
+
+    def __str__(self):
+        user_str = self.user.username if self.user else "Anonymous"
+        return f"{user_str} - {self.challenge_type} challenge"

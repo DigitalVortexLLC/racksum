@@ -94,13 +94,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, description }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/sites`,
+        createFetchOptions('POST', { name, description })
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -127,13 +124,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, description }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/sites/${id}`,
+        createFetchOptions('PUT', { name, description })
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -164,9 +158,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/sites/${id}`,
+        createFetchOptions('DELETE')
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -229,17 +224,14 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/${siteId}/racks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await fetch(
+        `${API_BASE_URL}/api/sites/${siteId}/racks`,
+        createFetchOptions('POST', {
           name: rackName,
           configData,
           description,
-        }),
-      });
+        })
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -317,9 +309,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/racks/${rackId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/racks/${rackId}`,
+        createFetchOptions('DELETE')
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

@@ -39,10 +39,25 @@ export function useToast() {
     })
   }
 
+  // Generic showToast function that maps severity to specific functions
+  const showToast = (severity, message, detail = '') => {
+    const severityMap = {
+      'success': showSuccess,
+      'error': showError,
+      'info': showInfo,
+      'warn': showWarn,
+      'warning': showWarn
+    }
+
+    const toastFn = severityMap[severity] || showInfo
+    toastFn(message, detail)
+  }
+
   return {
     showSuccess,
     showError,
     showInfo,
-    showWarn
+    showWarn,
+    showToast
   }
 }

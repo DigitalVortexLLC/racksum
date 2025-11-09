@@ -4,9 +4,10 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 
@@ -29,6 +30,7 @@ class SiteViewSet(viewsets.ModelViewSet):
     """
     queryset = Site.objects.all()
     serializer_class = SiteSerializer
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         """
@@ -98,6 +100,7 @@ class SiteViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def rack_operations_view(request, site_id):
     """
     Combined view for GET (list racks) and POST (save rack) operations
@@ -166,6 +169,7 @@ def rack_operations_view(request, site_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_rack_configuration(request, site_id, rack_name):
     """
     Get a specific rack configuration
@@ -193,6 +197,7 @@ def get_rack_configuration(request, site_id, rack_name):
 
 
 @api_view(['DELETE'])
+@permission_classes([AllowAny])
 def delete_rack_configuration(request, rack_id):
     """
     Delete a rack configuration
@@ -212,6 +217,7 @@ def delete_rack_configuration(request, rack_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_all_racks(request):
     """
     Get all rack configurations across all sites
@@ -228,6 +234,7 @@ def get_all_racks(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def load_rack_config(request):
     """
     Load rack configuration endpoint (matches Express /api/load)
@@ -255,6 +262,7 @@ def load_rack_config(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_devices(request):
     """
     Serve devices.json file
@@ -284,6 +292,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
     """
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         """
@@ -313,6 +322,7 @@ class RackViewSet(viewsets.ModelViewSet):
     """
     queryset = Rack.objects.all()
     serializer_class = RackSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """Filter by site_id if provided"""
@@ -326,6 +336,7 @@ class RackViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def create_rack(request, site_id):
     """
     Create a new rack for a specific site
@@ -358,6 +369,7 @@ def create_rack(request, site_id):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def add_device_to_rack(request, rack_id):
     """
     Add a device to a specific rack at a given position
@@ -393,6 +405,7 @@ def add_device_to_rack(request, rack_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([AllowAny])
 def remove_device_from_rack(request, rack_device_id):
     """
     Remove a device from a rack
@@ -414,6 +427,7 @@ def remove_device_from_rack(request, rack_device_id):
 # ==================== Resource Usage Endpoints ====================
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_site_resource_usage(request, site_id):
     """
     Get resource usage (power and HVAC) for a specific site
@@ -459,6 +473,7 @@ def get_site_resource_usage(request, site_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_rack_resource_usage(request, rack_id):
     """
     Get resource usage (power and HVAC) for a specific rack

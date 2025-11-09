@@ -67,6 +67,29 @@
           >
             Import/Export
           </button>
+          <button
+            @click="showDeviceManager = true"
+            class="px-4 py-2 rounded transition-colors font-medium"
+            style="background-color: rgba(0, 0, 0, 0.1); color: #0c0c0d;"
+            @mouseover="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'"
+            title="Manage Device Groups and Custom Devices"
+          >
+            Manage Devices
+          </button>
+          <button
+            v-if="authConfig.passkey_supported"
+            @click="showPasskeyAuth = true"
+            class="px-4 py-2 rounded transition-colors font-medium"
+            style="background-color: rgba(0, 0, 0, 0.1); color: #0c0c0d;"
+            @mouseover="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'"
+            title="Passkey Authentication"
+          >
+            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -85,17 +108,22 @@
     <!-- Modals -->
     <ConfigMenu v-if="showConfig" @close="showConfig = false" />
     <ImportExport v-if="showImportExport" @close="showImportExport = false" />
+    <DeviceManager v-if="showDeviceManager" @close="showDeviceManager = false" />
     <SaveLoadDialog
       v-model="showSaveLoad"
       :mode="saveLoadMode"
       :current-config="currentConfig"
       @config-loaded="handleConfigLoaded"
     />
+    <PasskeyAuth
+      v-model="showPasskeyAuth"
+      @authenticated="handleAuthenticated"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, provide, computed } from 'vue'
+import { ref, provide, computed, onMounted } from 'vue'
 import Toast from 'primevue/toast'
 import DeviceLibrary from './components/DeviceLibrary.vue'
 import RackContainer from './components/RackContainer.vue'
@@ -103,14 +131,19 @@ import UtilizationPanel from './components/UtilizationPanel.vue'
 import UnrackedDevices from './components/UnrackedDevices.vue'
 import ConfigMenu from './components/ConfigMenu.vue'
 import ImportExport from './components/ImportExport.vue'
+import DeviceManager from './components/DeviceManager.vue'
 import SaveLoadDialog from './components/SaveLoadDialog.vue'
+import PasskeyAuth from './components/PasskeyAuth.vue'
 import { useDarkMode } from './composables/useDarkMode'
 import { useRackConfig } from './composables/useRackConfig'
 import { useDatabase } from './composables/useDatabase'
+import { usePasskey } from './composables/usePasskey'
 
 const showConfig = ref(false)
 const showImportExport = ref(false)
+const showDeviceManager = ref(false)
 const showSaveLoad = ref(false)
+const showPasskeyAuth = ref(false)
 const saveLoadMode = ref('save')
 
 // Dark mode
@@ -122,8 +155,18 @@ const { config, loadConfiguration } = useRackConfig()
 // Database
 const { loadCurrentSite } = useDatabase()
 
-// Load current site on mount
-loadCurrentSite()
+// Passkey authentication
+const { getAuthConfig } = usePasskey()
+const authConfig = ref({
+  require_auth: false,
+  passkey_supported: false
+})
+
+// Load auth config and current site on mount
+onMounted(async () => {
+  authConfig.value = await getAuthConfig()
+  loadCurrentSite()
+})
 
 // Track unracked panel state
 const unrackedPanelExpanded = ref(false)
@@ -149,5 +192,9 @@ function openLoadDialog() {
 
 function handleConfigLoaded(configData) {
   loadConfiguration(configData)
+}
+
+function handleAuthenticated(user) {
+  console.log('User authenticated:', user)
 }
 </script>

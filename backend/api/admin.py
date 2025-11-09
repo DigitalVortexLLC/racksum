@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Site, RackConfiguration, Device, Rack, RackDevice
+from .models import Site, RackConfiguration, Device, Rack, RackDevice, Passkey, PasskeyChallenge
 
 
 @admin.register(Site)
@@ -152,3 +152,47 @@ class RackConfigurationAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+@admin.register(Passkey)
+class PasskeyAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Passkey model
+    """
+    list_display = ['id', 'user', 'name', 'created_at', 'last_used_at']
+    list_filter = ['created_at', 'last_used_at']
+    search_fields = ['user__username', 'name', 'aaguid']
+    readonly_fields = ['credential_id', 'public_key', 'sign_count', 'aaguid', 'created_at', 'last_used_at']
+    ordering = ['-created_at']
+    raw_id_fields = ['user']
+
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'name')
+        }),
+        ('Credential Data', {
+            'fields': ('credential_id', 'public_key', 'sign_count', 'transports', 'aaguid')
+        }),
+        ('Usage', {
+            'fields': ('created_at', 'last_used_at')
+        }),
+    )
+
+
+@admin.register(PasskeyChallenge)
+class PasskeyChallengeAdmin(admin.ModelAdmin):
+    """
+    Admin interface for PasskeyChallenge model
+    """
+    list_display = ['id', 'user', 'challenge_type', 'created_at', 'expires_at', 'is_expired']
+    list_filter = ['challenge_type', 'created_at']
+    search_fields = ['user__username']
+    readonly_fields = ['challenge', 'created_at']
+    ordering = ['-created_at']
+    raw_id_fields = ['user']
+
+    def is_expired(self, obj):
+        """Check if challenge is expired"""
+        from django.utils import timezone
+        return obj.expires_at < timezone.now()
+    is_expired.boolean = True
+    is_expired.short_description = 'Expired'
