@@ -74,19 +74,20 @@
         <!-- HVAC Capacity -->
         <div class="mb-6">
           <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
-            HVAC Capacity (BTU/hr)
+            HVAC Capacity (Refrigeration Tons)
           </label>
         <input
-          v-model.number="localSettings.hvacCapacity"
+          v-model.number="localSettings.hvacCapacityTons"
           type="number"
           min="0"
+          step="0.1"
           class="w-full px-3 py-2 rounded focus:outline-none transition-colors"
           style="border: 1px solid var(--border-color); background-color: var(--bg-secondary); color: var(--text-primary);"
           @focus="$event.target.style.borderColor = 'var(--color-primary)'; $event.target.style.boxShadow = '0 0 0 2px rgba(132, 204, 22, 0.2)'"
             @blur="$event.target.style.borderColor = 'var(--border-color)'; $event.target.style.boxShadow = 'none'"
           />
           <p class="text-xs mt-1" style="color: var(--text-secondary);">
-            Tip: 1 Watt ≈ 3.41 BTU/hr
+            Tip: 1 Refrigeration Ton = 12,000 BTU/hr
           </p>
         </div>
 
@@ -117,9 +118,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRackConfig } from '../composables/useRackConfig'
 import { useToast } from '../composables/useToast'
+import { tonsToBtu, btuToTons } from '../utils/calculations'
 
 const emit = defineEmits(['close'])
 
@@ -130,7 +132,7 @@ const localSettings = ref({
   numberOfRacks: 1,
   ruPerRack: 42,
   totalPowerCapacity: 10000,
-  hvacCapacity: 34100
+  hvacCapacityTons: 3
 })
 
 onMounted(() => {
@@ -138,7 +140,7 @@ onMounted(() => {
     numberOfRacks: config.value.racks.length || 1,
     ruPerRack: config.value.settings.ruPerRack,
     totalPowerCapacity: config.value.settings.totalPowerCapacity,
-    hvacCapacity: config.value.settings.hvacCapacity
+    hvacCapacityTons: btuToTons(config.value.settings.hvacCapacity)
   }
 })
 
@@ -146,7 +148,7 @@ const saveSettings = () => {
   updateSettings({
     ruPerRack: localSettings.value.ruPerRack,
     totalPowerCapacity: localSettings.value.totalPowerCapacity,
-    hvacCapacity: localSettings.value.hvacCapacity
+    hvacCapacity: tonsToBtu(localSettings.value.hvacCapacityTons)
   })
 
   // Update number of racks

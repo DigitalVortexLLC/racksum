@@ -12,7 +12,7 @@ const createDefaultConfig = () => ({
   },
   settings: {
     totalPowerCapacity: 10000,
-    hvacCapacity: 34100, // ~10kW in BTU/hr (1W = 3.41 BTU/hr)
+    hvacCapacity: 36000, // 3 Refrigeration Tons (1 ton = 12,000 BTU/hr)
     ruPerRack: 42
   },
   racks: [

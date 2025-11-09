@@ -54,3 +54,26 @@ export function getUtilizationStatus(percentage) {
   if (percentage < 90) return 'yellow'
   return 'red'
 }
+
+/**
+ * Convert Refrigeration Tons to BTU/hr
+ * Formula: 1 Refrigeration Ton = 12,000 BTU/hr
+ *
+ * @param {number} tons - Refrigeration capacity in tons
+ * @returns {number} Capacity in BTU/hr
+ */
+export function tonsToBtu(tons) {
+  const BTU_PER_TON = 12000
+  return tons * BTU_PER_TON
+}
+
+/**
+ * Convert BTU/hr to Refrigeration Tons
+ *
+ * @param {number} btu - Heat in BTU/hr
+ * @returns {number} Refrigeration Tons
+ */
+export function btuToTons(btu) {
+  const BTU_PER_TON = 12000
+  return btu / BTU_PER_TON
+}
