@@ -14,8 +14,8 @@
           @click="close"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -68,8 +68,8 @@
               @click="showNewSiteDialog = true"
               class="px-4 py-2 rounded transition-colors"
               style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);"
-              @mouseover="$event.target.style.backgroundColor = 'var(--color-primary-light)'"
-              @mouseout="$event.target.style.backgroundColor = 'var(--bg-secondary)'"
+              @mouseover="$event.currentTarget.style.backgroundColor = 'var(--color-primary-light)'"
+              @mouseout="$event.currentTarget.style.backgroundColor = 'var(--bg-secondary)'"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -162,8 +162,8 @@
                   @click.stop="confirmDelete(rack)"
                   class="p-2 rounded transition-colors"
                   style="color: #ef4444;"
-                  @mouseover="$event.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
-                  @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                  @mouseover="$event.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'"
+                  @mouseout="$event.currentTarget.style.backgroundColor = 'transparent'"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -180,8 +180,8 @@
             @click="close"
             class="flex-1 px-4 py-2 rounded transition-opacity"
             style="background-color: var(--color-primary-light); color: var(--color-primary-dark);"
-            @mouseover="$event.target.style.opacity = '0.8'"
-            @mouseout="$event.target.style.opacity = '1'"
+            @mouseover="$event.currentTarget.style.opacity = '0.8'"
+            @mouseout="$event.currentTarget.style.opacity = '1'"
           >
             Cancel
           </button>
@@ -248,8 +248,8 @@
           @click="showNewSiteDialog = false"
           class="transition-colors"
           style="color: rgba(12, 12, 13, 0.7);"
-          @mouseover="$event.target.style.color = '#0c0c0d'"
-          @mouseout="$event.target.style.color = 'rgba(12, 12, 13, 0.7)'"
+          @mouseover="$event.currentTarget.style.color = '#0c0c0d'"
+          @mouseout="$event.currentTarget.style.color = 'rgba(12, 12, 13, 0.7)'"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -293,8 +293,8 @@
             @click="showNewSiteDialog = false"
             class="flex-1 px-4 py-2 rounded transition-opacity"
             style="background-color: var(--color-primary-light); color: var(--color-primary-dark);"
-            @mouseover="$event.target.style.opacity = '0.8'"
-            @mouseout="$event.target.style.opacity = '1'"
+            @mouseover="$event.currentTarget.style.opacity = '0.8'"
+            @mouseout="$event.currentTarget.style.opacity = '1'"
           >
             Cancel
           </button>
