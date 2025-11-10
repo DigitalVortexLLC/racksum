@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Passkey',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('credential_id', models.TextField(db_index=True, help_text='Base64-encoded credential ID', unique=True)),
+                ('credential_id', models.CharField(db_index=True, help_text='Base64-encoded credential ID', max_length=255, unique=True)),
                 ('public_key', models.TextField(help_text='Base64-encoded public key')),
                 ('sign_count', models.IntegerField(default=0, help_text='Signature counter for replay protection')),
                 ('transports', models.JSONField(blank=True, default=list, help_text='Supported transports (usb, nfc, ble, internal)')),
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             name='PasskeyChallenge',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('challenge', models.TextField(help_text='Base64-encoded challenge')),
+                ('challenge', models.CharField(help_text='Base64-encoded challenge', max_length=255)),
                 ('challenge_type', models.CharField(choices=[('registration', 'Registration'), ('authentication', 'Authentication')], max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('expires_at', models.DateTimeField(help_text='Challenge expiration time')),

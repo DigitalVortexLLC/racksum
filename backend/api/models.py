@@ -175,7 +175,7 @@ class Passkey(models.Model):
         on_delete=models.CASCADE,
         related_name='passkeys'
     )
-    credential_id = models.TextField(unique=True, db_index=True, help_text="Base64-encoded credential ID")
+    credential_id = models.CharField(max_length=255, unique=True, db_index=True, help_text="Base64-encoded credential ID")
     public_key = models.TextField(help_text="Base64-encoded public key")
     sign_count = models.IntegerField(default=0, help_text="Signature counter for replay protection")
     transports = models.JSONField(default=list, blank=True, help_text="Supported transports (usb, nfc, ble, internal)")
@@ -207,7 +207,7 @@ class PasskeyChallenge(models.Model):
         null=True,
         blank=True
     )
-    challenge = models.TextField(help_text="Base64-encoded challenge")
+    challenge = models.CharField(max_length=255, help_text="Base64-encoded challenge")
     challenge_type = models.CharField(
         max_length=20,
         choices=[
