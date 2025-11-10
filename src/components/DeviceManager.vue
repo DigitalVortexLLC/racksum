@@ -80,7 +80,7 @@
               <p class="text-sm opacity-70">Organize devices into categories</p>
             </div>
             <button
-              @click="showAddGroupDialog = true"
+              @click="addGroupDialog?.showModal()"
               class="btn btn-primary gap-2"
             >
               <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@
               <p class="text-sm opacity-70">Create and manage your device library</p>
             </div>
             <button
-              @click="showAddDeviceDialog = true"
+              @click="addDeviceDialog?.showModal()"
               class="btn btn-primary gap-2"
             >
               <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +229,7 @@
               <p class="text-sm opacity-70">Define your infrastructure capacity</p>
             </div>
             <button
-              @click="showAddProviderDialog = true"
+              @click="addProviderDialog?.showModal()"
               class="btn btn-primary gap-2"
             >
               <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +256,7 @@
                   <svg v-else-if="provider.type === 'network'" class="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
                   </svg>
-                  <span class="text-xs font-semibold text-primary mt-1 capitalize">{{ provider.type }}</span>
+                  <span class="text-xs font-semibold mt-1 capitalize">{{ provider.type }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h4 class="card-title text-base mb-2">{{ provider.name }}</h4>
@@ -463,13 +463,9 @@
   </div>
 
   <!-- Add Device Group Dialog -->
-  <div
-    v-if="showAddGroupDialog"
-    class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-md"
-    @click.self="closeGroupDialog"
-  >
-    <div class="rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-200 bg-base-100">
-      <div class="flex items-center justify-between mb-6 p-6 rounded-t-xl bg-primary">
+  <dialog ref="addGroupDialog" class="modal">
+    <div class="modal-box w-full max-w-md">
+      <div class="flex items-center justify-between mb-6 p-6 -mx-6 -mt-6 rounded-t-xl bg-primary">
         <h2 class="text-2xl font-bold text-primary-content">{{ editingGroup ? 'Edit' : 'Add' }} Device Group</h2>
         <button
           @click="closeGroupDialog"
@@ -481,7 +477,7 @@
         </button>
       </div>
 
-      <div class="px-6 pb-6">
+      <div>
         <div class="mb-4">
           <label class="label">
             <span class="label-text">Group Name</span>
@@ -513,30 +509,29 @@
           </div>
         </div>
 
-        <div class="flex gap-2">
-          <button @click="closeGroupDialog" class="btn flex-1">
+        <div class="modal-action">
+          <button @click="closeGroupDialog" class="btn">
             Cancel
           </button>
           <button
             @click="handleSaveGroup"
             :disabled="!newGroup.name?.trim()"
-            class="btn btn-primary flex-1"
+            class="btn btn-primary"
           >
             {{ editingGroup ? 'Save Changes' : 'Add Group' }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 
   <!-- Add Device Dialog -->
-  <div
-    v-if="showAddDeviceDialog"
-    class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-md"
-    @click.self="closeDeviceDialog"
-  >
-    <div class="rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-200 bg-base-100">
-      <div class="flex items-center justify-between mb-6 p-6 rounded-t-xl bg-primary">
+  <dialog ref="addDeviceDialog" class="modal">
+    <div class="modal-box w-full max-w-md max-h-[90vh]">
+      <div class="flex items-center justify-between mb-6 p-6 -mx-6 -mt-6 rounded-t-xl bg-primary">
         <h2 class="text-2xl font-bold text-primary-content">
           {{ editingDevice ? 'Edit' : isDuplicating ? 'Duplicate' : 'Add' }} Device
         </h2>
@@ -550,7 +545,7 @@
         </button>
       </div>
 
-      <div class="px-6 pb-6" style="max-height: 70vh; overflow-y: auto;">
+      <div style="max-height: 60vh; overflow-y: auto;">
         <div class="mb-4">
           <label class="label">
             <span class="label-text">Device Model Name *</span>
@@ -676,30 +671,29 @@
           ></textarea>
         </div>
 
-        <div class="flex gap-2">
-          <button @click="closeDeviceDialog" class="btn flex-1">
+        <div class="modal-action">
+          <button @click="closeDeviceDialog" class="btn">
             Cancel
           </button>
           <button
             @click="handleSaveDevice"
             :disabled="!canAddDevice"
-            class="btn btn-primary flex-1"
+            class="btn btn-primary"
           >
             {{ editingDevice ? 'Save Changes' : isDuplicating ? 'Create Duplicate' : 'Add Device' }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 
   <!-- Add/Edit Resource Provider Dialog -->
-  <div
-    v-if="showAddProviderDialog"
-    class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-md"
-    @click.self="closeProviderDialog"
-  >
-    <div class="rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-200 bg-base-100">
-      <div class="flex items-center justify-between mb-6 p-6 rounded-t-xl bg-primary">
+  <dialog ref="addProviderDialog" class="modal">
+    <div class="modal-box w-full max-w-md max-h-[90vh]">
+      <div class="flex items-center justify-between mb-6 p-6 -mx-6 -mt-6 rounded-t-xl bg-primary">
         <h2 class="text-2xl font-bold text-primary-content">
           {{ editingProvider ? 'Edit' : 'Add' }} Resource Provider
         </h2>
@@ -713,7 +707,7 @@
         </button>
       </div>
 
-      <div class="px-6 pb-6" style="max-height: 70vh; overflow-y: auto;">
+      <div style="max-height: 60vh; overflow-y: auto;">
         <div class="mb-4">
           <label class="label">
             <span class="label-text">Provider Name *</span>
@@ -838,21 +832,24 @@
           ></textarea>
         </div>
 
-        <div class="flex gap-2">
-          <button @click="closeProviderDialog" class="btn flex-1">
+        <div class="modal-action">
+          <button @click="closeProviderDialog" class="btn">
             Cancel
           </button>
           <button
             @click="handleSaveProvider"
             :disabled="!canAddProvider"
-            class="btn btn-primary flex-1"
+            class="btn btn-primary"
           >
             {{ editingProvider ? 'Save Changes' : 'Add Provider' }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 </template>
 
 <script setup>
@@ -882,9 +879,9 @@ watch(() => props.initialTab, (newTab) => {
   activeTab.value = newTab
 })
 
-const showAddGroupDialog = ref(false);
-const showAddDeviceDialog = ref(false);
-const showAddProviderDialog = ref(false);
+const addGroupDialog = ref(null);
+const addDeviceDialog = ref(null);
+const addProviderDialog = ref(null);
 const editingGroup = ref(null);
 const editingDevice = ref(null);
 const editingProvider = ref(null);
@@ -1027,7 +1024,7 @@ function validateDevice() {
 }
 
 function closeGroupDialog() {
-  showAddGroupDialog.value = false;
+  addGroupDialog.value?.close();
   editingGroup.value = null;
   newGroup.value = {
     name: '',
@@ -1036,7 +1033,7 @@ function closeGroupDialog() {
 }
 
 function closeDeviceDialog() {
-  showAddDeviceDialog.value = false;
+  addDeviceDialog.value?.close();
   editingDevice.value = null;
   isDuplicating.value = false;
   newDevice.value = {
@@ -1062,7 +1059,7 @@ function editGroup(group) {
     name: group.name,
     color: group.color
   };
-  showAddGroupDialog.value = true;
+  addGroupDialog.value?.showModal();
 }
 
 function handleSaveGroup() {
@@ -1135,7 +1132,7 @@ function editDevice(device) {
     color: device.color,
     description: device.description || ''
   };
-  showAddDeviceDialog.value = true;
+  addDeviceDialog.value?.showModal();
 }
 
 function duplicateDevice(device) {
@@ -1150,7 +1147,7 @@ function duplicateDevice(device) {
     color: device.color,
     description: device.description || ''
   };
-  showAddDeviceDialog.value = true;
+  addDeviceDialog.value?.showModal();
 }
 
 function handleSaveDevice() {
@@ -1225,7 +1222,7 @@ function updateGroupCounts() {
 }
 
 function closeProviderDialog() {
-  showAddProviderDialog.value = false;
+  addProviderDialog.value?.close();
   editingProvider.value = null;
   newProvider.value = {
     name: '',
@@ -1251,7 +1248,7 @@ function editProvider(provider) {
     location: provider.location || '',
     description: provider.description || ''
   };
-  showAddProviderDialog.value = true;
+  addProviderDialog.value?.showModal();
 }
 
 function handleSaveProvider() {

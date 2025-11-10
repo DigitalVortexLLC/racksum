@@ -91,14 +91,24 @@ export function useUtilization() {
     return Math.min(100, Math.round((hvacLoad.value / hvacCapacity.value) * 100))
   })
 
-  // Calculate RU utilization across all racks
+  // Calculate RU utilization across all racks and unracked devices
   const ruUsed = computed(() => {
     let total = 0
+
+    // Add RU from devices in racks
     for (const rack of config.value.racks) {
       for (const device of rack.devices) {
         total += device.ruSize || 0
       }
     }
+
+    // Add RU from unracked devices
+    if (config.value.unrackedDevices) {
+      for (const device of config.value.unrackedDevices) {
+        total += device.ruSize || 0
+      }
+    }
+
     return total
   })
 

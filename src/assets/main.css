@@ -201,3 +201,12 @@ button:active {
   background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
   background-size: 1000px 100%;
 }
+
+/* Navbar button hover effects - darker green */
+.navbar .btn-ghost:hover {
+  background-color: rgba(101, 163, 13, 0.2) !important;
+}
+
+:root.dark .navbar .btn-ghost:hover {
+  background-color: rgba(101, 163, 13, 0.3) !important;
+}
