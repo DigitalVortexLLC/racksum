@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db import models
-from .models import Site, RackConfiguration, Device, Rack, RackDevice
+from .models import Site, RackConfiguration, Device, Rack, RackDevice, Provider
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -214,3 +214,120 @@ class RackCreateSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError("Rack name is required")
         return value.strip()
+
+
+class ProviderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Provider model
+    """
+    site_name = serializers.CharField(source='site.name', read_only=True)
+    rack_name = serializers.CharField(source='rack.name', read_only=True, allow_null=True)
+    type_display = serializers.CharField(source='get_type_display', read_only=True)
+
+    class Meta:
+        model = Provider
+        fields = [
+            'id',
+            'site',
+            'site_name',
+            'name',
+            'type',
+            'type_display',
+            'description',
+            'location',
+            'power_capacity',
+            'power_ports_capacity',
+            'cooling_capacity',
+            'network_capacity',
+            'ru_size',
+            'rack',
+            'rack_name',
+            'position',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'site_name', 'rack_name', 'type_display', 'created_at', 'updated_at']
+
+
+class ProviderCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating/updating Provider instances
+    """
+    class Meta:
+        model = Provider
+        fields = [
+            'id',
+            'name',
+            'type',
+            'description',
+            'location',
+            'power_capacity',
+            'power_ports_capacity',
+            'cooling_capacity',
+            'network_capacity',
+            'ru_size',
+            'rack',
+            'position'
+        ]
+        read_only_fields = ['id']
+
+    def validate_name(self, value):
+        """Validate provider name is not empty"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Provider name is required")
+        return value.strip()
+
+    def validate(self, data):
+        """Validate provider placement rules"""
+        ru_size = data.get('ru_size', 0)
+        rack = data.get('rack')
+        position = data.get('position')
+
+        # If ru_size is 0, rack and position must be null
+        if ru_size == 0:
+            if rack or position:
+                raise serializers.ValidationError(
+                    "Providers with ru_size=0 cannot be placed in racks"
+                )
+
+        # If racked, must have both rack and position
+        if (rack and not position) or (position and not rack):
+            raise serializers.ValidationError(
+                "Both rack and position must be set for racked providers"
+            )
+
+        # If racked, validate placement
+        if rack and position:
+            # Check if provider exceeds rack height
+            if position + ru_size - 1 > rack.ru_height:
+                raise serializers.ValidationError(
+                    f"Provider placement exceeds rack height "
+                    f"(position {position} + size {ru_size} > {rack.ru_height})"
+                )
+
+            # Check for conflicts with existing devices
+            for ru in range(position, position + ru_size):
+                device_conflict = RackDevice.objects.filter(
+                    rack=rack,
+                    position__lte=ru,
+                    position__gt=ru - models.F('device__ru_size')
+                ).exclude(id=self.instance.id if self.instance else None).exists()
+
+                if device_conflict:
+                    raise serializers.ValidationError(
+                        f"Position conflict with device: RU {ru} is already occupied"
+                    )
+
+            # Check for conflicts with other providers
+            provider_conflict = Provider.objects.filter(
+                rack=rack,
+                position__lte=position + ru_size - 1,
+                position__gte=position - models.F('ru_size') + 1
+            ).exclude(id=self.instance.id if self.instance else None).exists()
+
+            if provider_conflict:
+                raise serializers.ValidationError(
+                    f"Position conflict with another provider at position {position}"
+                )
+
+        return data

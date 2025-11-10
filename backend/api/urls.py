@@ -8,6 +8,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register(r'sites', views.SiteViewSet, basename='site')
 router.register(r'devices', views.DeviceViewSet, basename='device')
 router.register(r'racks', views.RackViewSet, basename='rack')
+router.register(r'providers', views.ProviderViewSet, basename='provider')
 
 urlpatterns = [
     # Custom endpoints (order matters - specific before general)
@@ -24,6 +25,9 @@ urlpatterns = [
     path('sites/<int:site_id>/create-rack', views.create_rack, name='create-rack'),
     path('racks/<int:rack_id>/add-device', views.add_device_to_rack, name='add-device-to-rack'),
     path('rack-devices/<int:rack_device_id>', views.remove_device_from_rack, name='remove-device-from-rack'),
+
+    # Provider management endpoints
+    path('sites/<int:site_id>/create-provider', views.create_provider, name='create-provider'),
 
     # Resource usage endpoints
     path('sites/<int:site_id>/resource-usage', views.get_site_resource_usage, name='site-resource-usage'),

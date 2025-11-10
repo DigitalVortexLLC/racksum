@@ -52,6 +52,10 @@ export function useResourceProviders() {
       networkCapacity: provider.networkCapacity || 0, // Gbps
       description: provider.description || '',
       location: provider.location || '',
+      // RU space consumption properties (optional)
+      ruSize: provider.ruSize || 0, // How many RUs this provider occupies (0 = not racked)
+      rackId: provider.rackId || null, // Which rack it's placed in (null = not racked)
+      position: provider.position || null, // Starting RU position in rack (null = not racked)
       custom: true,
       createdAt: new Date().toISOString()
     }
@@ -125,6 +129,55 @@ export function useResourceProviders() {
     return resourceProviders.value.filter(p => p.type === PROVIDER_TYPES.NETWORK)
   })
 
+  // Get racked vs unracked providers
+  const getRackedProviders = computed(() => {
+    return resourceProviders.value.filter(p => p.rackId && p.position && p.ruSize > 0)
+  })
+
+  const getUnrackedProviders = computed(() => {
+    return resourceProviders.value.filter(p => !p.rackId || !p.position || p.ruSize === 0)
+  })
+
+  // Get providers for a specific rack
+  const getProvidersForRack = (rackId) => {
+    return resourceProviders.value.filter(p => p.rackId === rackId && p.position && p.ruSize > 0)
+  }
+
+  // Place provider in rack
+  const placeProviderInRack = (providerId, rackId, position) => {
+    const provider = getProviderById(providerId)
+    if (!provider || !provider.ruSize || provider.ruSize === 0) {
+      return false
+    }
+
+    return updateProvider(providerId, {
+      rackId,
+      position
+    })
+  }
+
+  // Remove provider from rack
+  const removeProviderFromRack = (providerId) => {
+    return updateProvider(providerId, {
+      rackId: null,
+      position: null
+    })
+  }
+
+  // Calculate total RU used by providers
+  const totalProviderRU = computed(() => {
+    return resourceProviders.value.reduce((sum, provider) => {
+      return sum + (provider.ruSize || 0)
+    }, 0)
+  })
+
+  // Calculate RU used by racked providers
+  const rackedProviderRU = computed(() => {
+    return getRackedProviders.value.reduce((sum, provider) => {
+      return sum + (provider.ruSize || 0)
+    }, 0)
+  })
+
   // Export/Import functionality
   const exportProviders = () => {
     return {
@@ -176,10 +229,17 @@ export function useResourceProviders() {
     getPowerProviders,
     getCoolingProviders,
     getNetworkProviders,
+    getRackedProviders,
+    getUnrackedProviders,
+    getProvidersForRack,
+    totalProviderRU,
+    rackedProviderRU,
     addProvider,
     updateProvider,
     deleteProvider,
     getProviderById,
+    placeProviderInRack,
+    removeProviderFromRack,
     exportProviders,
     importProviders,
     loadProviders

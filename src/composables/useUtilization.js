@@ -5,7 +5,7 @@ import { calculateHeatLoad } from '../utils/calculations'
 
 export function useUtilization() {
   const { config } = useRackConfig()
-  const { totalPowerCapacity, totalPowerPortsCapacity, totalCoolingCapacity } = useResourceProviders()
+  const { totalPowerCapacity, totalPowerPortsCapacity, totalCoolingCapacity, rackedProviderRU } = useResourceProviders()
 
   // Calculate total power used across all racks and unracked devices
   const powerUsed = computed(() => {
@@ -108,6 +108,9 @@ export function useUtilization() {
         total += device.ruSize || 0
       }
     }
+
+    // Add RU from racked providers (UPS, PDUs, etc.)
+    total += rackedProviderRU.value || 0
 
     return total
   })

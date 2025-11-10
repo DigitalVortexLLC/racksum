@@ -13,7 +13,7 @@ from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 
-from .models import Site, RackConfiguration, Device, Rack, RackDevice
+from .models import Site, RackConfiguration, Device, Rack, RackDevice, Provider
 from .serializers import (
     SiteSerializer,
     RackConfigurationSerializer,
@@ -22,7 +22,9 @@ from .serializers import (
     RackSerializer,
     RackCreateSerializer,
     RackDeviceSerializer,
-    RackDeviceCreateSerializer
+    RackDeviceCreateSerializer,
+    ProviderSerializer,
+    ProviderCreateSerializer
 )
 
 
@@ -794,5 +796,159 @@ def get_rack_resource_usage(request, rack_id):
     except Exception as e:
         return Response(
             {'error': 'Failed to calculate rack resource usage', 'details': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# ==================== Provider Management Endpoints ====================
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all providers",
+        description="Retrieve a list of all resource providers, optionally filtered by site or type",
+        tags=["Providers"],
+        parameters=[
+            OpenApiParameter(
+                name="site_id",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="Filter providers by site ID",
+                required=False
+            ),
+            OpenApiParameter(
+                name="type",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter providers by type (power, cooling, network)",
+                required=False
+            )
+        ]
+    ),
+    retrieve=extend_schema(
+        summary="Get provider details",
+        description="Retrieve details of a specific provider by ID",
+        tags=["Providers"]
+    ),
+    create=extend_schema(
+        summary="Create a new provider",
+        description="Create a new resource provider (UPS, PDU, CRAC, etc.)",
+        tags=["Providers"],
+        examples=[
+            OpenApiExample(
+                "UPS provider example",
+                value={
+                    "site": 1,
+                    "name": "UPS-01",
+                    "type": "power",
+                    "description": "Main UPS unit",
+                    "power_capacity": 10000,
+                    "ru_size": 6,
+                    "rack": 1,
+                    "position": 1
+                },
+                request_only=True
+            )
+        ]
+    ),
+    update=extend_schema(
+        summary="Update a provider",
+        description="Update an existing provider",
+        tags=["Providers"]
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a provider",
+        description="Partially update an existing provider",
+        tags=["Providers"]
+    ),
+    destroy=extend_schema(
+        summary="Delete a provider",
+        description="Delete a provider from the system",
+        tags=["Providers"]
+    )
+)
+class ProviderViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Provider CRUD operations
+    """
+    queryset = Provider.objects.all()
+    serializer_class = ProviderSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        """Filter by site_id and/or type if provided"""
+        queryset = Provider.objects.select_related('site', 'rack')
+
+        site_id = self.request.query_params.get('site_id')
+        if site_id:
+            queryset = queryset.filter(site_id=site_id)
+
+        provider_type = self.request.query_params.get('type')
+        if provider_type:
+            queryset = queryset.filter(type=provider_type)
+
+        return queryset
+
+    def get_serializer_class(self):
+        """Use ProviderCreateSerializer for create/update operations"""
+        if self.action in ['create', 'update', 'partial_update']:
+            return ProviderCreateSerializer
+        return ProviderSerializer
+
+    def perform_create(self, serializer):
+        """Create provider with validation"""
+        serializer.save()
+
+
+@extend_schema(
+    summary="Create a provider for a site",
+    description="Create a new resource provider for a specific site",
+    tags=["Providers"],
+    request=ProviderCreateSerializer,
+    parameters=[OpenApiParameter(name="site_id", type=OpenApiTypes.INT, location=OpenApiParameter.PATH)],
+    examples=[
+        OpenApiExample(
+            "PDU provider example",
+            value={
+                "name": "PDU-A1",
+                "type": "power",
+                "power_capacity": 5000,
+                "power_ports_capacity": 24,
+                "ru_size": 2,
+                "rack": 1,
+                "position": 40
+            },
+            request_only=True
+        )
+    ]
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_provider(request, site_id):
+    """
+    Create a new provider for a specific site
+    """
+    try:
+        site = get_object_or_404(Site, id=site_id)
+
+        serializer = ProviderCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        provider = Provider.objects.create(
+            site=site,
+            **serializer.validated_data
+        )
+
+        return Response(
+            ProviderSerializer(provider).data,
+            status=status.HTTP_201_CREATED
+        )
+    except ValidationError as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        return Response(
+            {'error': 'Failed to create provider', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

@@ -166,6 +166,110 @@ class RackDevice(models.Model):
         name = self.instance_name or self.device.name
         return f"{self.rack.name} - {name} @ RU{self.position}"
 
+
+class Provider(models.Model):
+    """
+    Represents a resource provider (power, cooling, network) that can optionally consume RU space
+    """
+    PROVIDER_TYPES = [
+        ('power', 'Power'),
+        ('cooling', 'Cooling'),
+        ('network', 'Network'),
+    ]
+
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        related_name='providers',
+        db_column='site_id'
+    )
+    name = models.CharField(max_length=255)
+    type = models.CharField(max_length=20, choices=PROVIDER_TYPES, db_index=True)
+    description = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True, help_text="Physical location description")
+
+    # Capacity fields (resource provisioning)
+    power_capacity = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Power capacity in watts"
+    )
+    power_ports_capacity = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Number of power ports available (for PDUs)"
+    )
+    cooling_capacity = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Cooling capacity in BTU/hr"
+    )
+    network_capacity = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Network capacity in Gbps"
+    )
+
+    # RU space consumption fields (optional rack placement)
+    ru_size = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Rack units consumed (0 = not racked)"
+    )
+    rack = models.ForeignKey(
+        Rack,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='providers',
+        db_column='rack_id',
+        help_text="Rack where this provider is installed (null = not racked)"
+    )
+    position = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+        help_text="Starting RU position in rack (null = not racked)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'providers'
+        ordering = ['site', 'type', 'name']
+        indexes = [
+            models.Index(fields=['site']),
+            models.Index(fields=['type']),
+            models.Index(fields=['rack']),
+        ]
+
+    def __str__(self):
+        rack_info = f" @ {self.rack.name} RU{self.position}" if self.rack and self.position else ""
+        return f"{self.site.name} - {self.name} ({self.get_type_display()}){rack_info}"
+
+    def clean(self):
+        """Validate provider placement"""
+        from django.core.exceptions import ValidationError
+
+        # If ru_size is 0, rack and position must be null
+        if self.ru_size == 0:
+            if self.rack or self.position:
+                raise ValidationError("Providers with ru_size=0 cannot be placed in racks")
+
+        # If racked, must have both rack and position
+        if (self.rack and not self.position) or (self.position and not self.rack):
+            raise ValidationError("Both rack and position must be set for racked providers")
+
+        # If racked, validate placement doesn't exceed rack height
+        if self.rack and self.position:
+            if self.position + self.ru_size - 1 > self.rack.ru_height:
+                raise ValidationError(
+                    f"Provider placement exceeds rack height "
+                    f"(position {self.position} + size {self.ru_size} > {self.rack.ru_height})"
+                )
+
+
 class Passkey(models.Model):
     """
     Stores WebAuthn/FIDO2 passkey credentials for passwordless authentication
