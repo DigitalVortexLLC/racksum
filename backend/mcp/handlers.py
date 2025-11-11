@@ -1,6 +1,7 @@
 """
 MCP tool handler implementations for RackSum datacenter management
 """
+
 import logging
 from typing import Optional
 from asgiref.sync import sync_to_async
@@ -15,14 +16,13 @@ logger = logging.getLogger(__name__)
 
 async def get_site_stats(output_format: str = "text") -> list[TextContent]:
     """Get statistics for all sites"""
+
     @sync_to_async
     def get_stats():
         try:
             logger.info(f"Fetching site statistics (format: {output_format})")
             # Use prefetch_related to avoid N+1 queries
-            sites = list(Site.objects.prefetch_related(
-                'racks__rack_devices__device'
-            ).all())
+            sites = list(Site.objects.prefetch_related("racks__rack_devices__device").all())
 
             if not sites:
                 logger.info("No sites found in database")
@@ -65,15 +65,14 @@ async def get_site_stats(output_format: str = "text") -> list[TextContent]:
 
 async def get_site_details(site_name: str, output_format: str = "text") -> list[TextContent]:
     """Get detailed information about a specific site"""
+
     @sync_to_async
     def get_details():
         try:
             logger.info(f"Fetching details for site: {site_name} (format: {output_format})")
             # Use prefetch_related to avoid N+1 queries
             # Use case-insensitive lookup for better user experience
-            site = Site.objects.prefetch_related(
-                'racks__rack_devices__device'
-            ).get(name__iexact=site_name)
+            site = Site.objects.prefetch_related("racks__rack_devices__device").get(name__iexact=site_name)
         except Site.DoesNotExist:
             logger.warning(f"Site not found: {site_name}")
             return f"Site '{site_name}' not found."
@@ -128,15 +127,14 @@ async def get_site_details(site_name: str, output_format: str = "text") -> list[
 
 async def get_rack_details(site_name: str, rack_name: str, output_format: str = "text") -> list[TextContent]:
     """Get detailed information about a specific rack"""
+
     @sync_to_async
     def get_details():
         try:
             logger.info(f"Fetching rack details: {site_name}/{rack_name} (format: {output_format})")
             # Use case-insensitive lookups for better user experience
             site = Site.objects.get(name__iexact=site_name)
-            rack = Rack.objects.prefetch_related(
-                'rack_devices__device'
-            ).get(site=site, name__iexact=rack_name)
+            rack = Rack.objects.prefetch_related("rack_devices__device").get(site=site, name__iexact=rack_name)
         except Site.DoesNotExist:
             logger.warning(f"Site not found: {site_name}")
             return f"Site '{site_name}' not found."
@@ -198,12 +196,17 @@ async def get_rack_details(site_name: str, rack_name: str, output_format: str = 
     return [TextContent(type="text", text=result)]
 
 
-async def get_available_resources(category: Optional[str] = None, limit: Optional[int] = None, output_format: str = "text") -> list[TextContent]:
+async def get_available_resources(
+    category: Optional[str] = None, limit: Optional[int] = None, output_format: str = "text"
+) -> list[TextContent]:
     """Get information about available device types"""
+
     @sync_to_async
     def get_resources():
         try:
-            logger.info(f"Fetching available resources{f' for category: {category}' if category else ''}{f' (limit: {limit})' if limit else ''} (format: {output_format})")
+            category_str = f" for category: {category}" if category else ""
+            limit_str = f" (limit: {limit})" if limit else ""
+            logger.info(f"Fetching available resources{category_str}{limit_str} (format: {output_format})")
             devices = Device.objects.all()
 
             if category:
@@ -216,7 +219,8 @@ async def get_available_resources(category: Optional[str] = None, limit: Optiona
             devices_list = list(devices)
 
             if not devices_list:
-                msg = f"No devices found" + (f" in category '{category}'" if category else "")
+                category_part = f" in category '{category}'" if category else ""
+                msg = f"No devices found{category_part}"
                 logger.info(msg)
                 if output_format == "json":
                     return json_formatters.format_available_resources_json([])
@@ -249,7 +253,9 @@ async def get_available_resources(category: Optional[str] = None, limit: Optiona
 
             details.append(f"\n\nTotal device types shown: {len(devices_list)}")
             if limit and limit > 0:
-                total_count = Device.objects.filter(category__icontains=category).count() if category else Device.objects.count()
+                total_count = (
+                    Device.objects.filter(category__icontains=category).count() if category else Device.objects.count()
+                )
                 if total_count > len(devices_list):
                     details.append(f"(Showing first {len(devices_list)} of {total_count} total devices)")
 
@@ -265,6 +271,7 @@ async def get_available_resources(category: Optional[str] = None, limit: Optiona
 
 async def get_resource_summary(output_format: str = "text") -> list[TextContent]:
     """Get overall resource utilization summary"""
+
     @sync_to_async
     def get_summary():
         try:
@@ -274,16 +281,20 @@ async def get_resource_summary(output_format: str = "text") -> list[TextContent]
             if not sites:
                 logger.info("No sites found in database")
                 if output_format == "json":
-                    return json_formatters.format_resource_summary_json([], None, {
-                        "total_sites": 0,
-                        "total_racks": 0,
-                        "total_rack_devices": 0,
-                        "total_device_types": 0,
-                        "total_ru_capacity": 0,
-                        "total_ru_used": 0,
-                        "overall_power": 0,
-                        "overall_hvac": 0
-                    })
+                    return json_formatters.format_resource_summary_json(
+                        [],
+                        None,
+                        {
+                            "total_sites": 0,
+                            "total_racks": 0,
+                            "total_rack_devices": 0,
+                            "total_device_types": 0,
+                            "total_ru_capacity": 0,
+                            "total_ru_used": 0,
+                            "overall_power": 0,
+                            "overall_hvac": 0,
+                        },
+                    )
                 return "No sites found in the database."
 
             total_sites = len(sites)
@@ -298,7 +309,7 @@ async def get_resource_summary(output_format: str = "text") -> list[TextContent]
             total_ru_used = 0
 
             # Fetch all racks with their devices in a single query
-            racks = Rack.objects.prefetch_related('rack_devices__device').all()
+            racks = Rack.objects.prefetch_related("rack_devices__device").all()
             for rack in racks:
                 overall_power += rack.get_power_utilization()
                 overall_hvac += rack.get_hvac_load()
@@ -313,7 +324,7 @@ async def get_resource_summary(output_format: str = "text") -> list[TextContent]
                 "total_ru_capacity": total_ru_capacity,
                 "total_ru_used": total_ru_used,
                 "overall_power": overall_power,
-                "overall_hvac": overall_hvac
+                "overall_hvac": overall_hvac,
             }
 
             if output_format == "json":
@@ -355,6 +366,7 @@ async def get_resource_summary(output_format: str = "text") -> list[TextContent]
 
 async def create_device(arguments: dict) -> list[TextContent]:
     """Create a new device type"""
+
     @sync_to_async
     def create():
         try:
@@ -370,7 +382,11 @@ async def create_device(arguments: dict) -> list[TextContent]:
                 description=arguments.get("description", ""),
             )
             logger.info(f"Successfully created device: {device.device_id}")
-            return f"✅ Device created successfully!\n\nDevice ID: {device.device_id}\nName: {device.name}\nCategory: {device.category}\nSize: {device.ru_size}U\nPower: {device.power_draw}W"
+            return (
+                f"✅ Device created successfully!\n\n"
+                f"Device ID: {device.device_id}\nName: {device.name}\n"
+                f"Category: {device.category}\nSize: {device.ru_size}U\nPower: {device.power_draw}W"
+            )
         except Exception as e:
             logger.error(f"Error creating device: {e}", exc_info=True)
             return f"❌ Error creating device: {str(e)}"
@@ -381,6 +397,7 @@ async def create_device(arguments: dict) -> list[TextContent]:
 
 async def create_rack(arguments: dict) -> list[TextContent]:
     """Create a new rack in a site"""
+
     @sync_to_async
     def create():
         try:
@@ -417,6 +434,7 @@ async def create_rack(arguments: dict) -> list[TextContent]:
 
 async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
     """Delete a rack from a site"""
+
     @sync_to_async
     def delete():
         try:
@@ -435,7 +453,10 @@ async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
             device_count = rack.rack_devices.count()
             if device_count > 0:
                 logger.warning(f"Cannot delete rack '{rack_name}': contains {device_count} devices")
-                return f"❌ Cannot delete rack '{rack_name}': it contains {device_count} device(s). Remove all devices first."
+                return (
+                    f"❌ Cannot delete rack '{rack_name}': it contains {device_count} device(s). "
+                    "Remove all devices first."
+                )
 
             rack.delete()
             logger.info(f"Successfully deleted rack '{rack_name}' from site '{site_name}'")
@@ -450,6 +471,7 @@ async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
 
 async def update_site_name(old_name: str, new_name: str) -> list[TextContent]:
     """Update a site's name"""
+
     @sync_to_async
     def update():
         try:
@@ -480,6 +502,7 @@ async def update_site_name(old_name: str, new_name: str) -> list[TextContent]:
 
 async def create_device_group(arguments: dict) -> list[TextContent]:
     """Create a new device group"""
+
     @sync_to_async
     def create():
         try:
@@ -492,7 +515,10 @@ async def create_device_group(arguments: dict) -> list[TextContent]:
 
             device_group = DeviceGroup.objects.create(name=name, description=arguments.get("description", ""))
             logger.info(f"Successfully created device group: {device_group.name}")
-            return f"✅ Device group created successfully!\n\nName: {device_group.name}\nDescription: {device_group.description or 'N/A'}"
+            return (
+                f"✅ Device group created successfully!\n\n"
+                f"Name: {device_group.name}\nDescription: {device_group.description or 'N/A'}"
+            )
         except Exception as e:
             logger.error(f"Error creating device group: {e}", exc_info=True)
             return f"❌ Error creating device group: {str(e)}"
@@ -503,6 +529,7 @@ async def create_device_group(arguments: dict) -> list[TextContent]:
 
 async def create_provider(arguments: dict) -> list[TextContent]:
     """Create a new hardware provider"""
+
     @sync_to_async
     def create():
         try:
@@ -517,7 +544,11 @@ async def create_provider(arguments: dict) -> list[TextContent]:
                 name=name, description=arguments.get("description", ""), website=arguments.get("website", "")
             )
             logger.info(f"Successfully created provider: {provider.name}")
-            return f"✅ Provider created successfully!\n\nName: {provider.name}\nWebsite: {provider.website or 'N/A'}\nDescription: {provider.description or 'N/A'}"
+            return (
+                f"✅ Provider created successfully!\n\n"
+                f"Name: {provider.name}\nWebsite: {provider.website or 'N/A'}\n"
+                f"Description: {provider.description or 'N/A'}"
+            )
         except Exception as e:
             logger.error(f"Error creating provider: {e}", exc_info=True)
             return f"❌ Error creating provider: {str(e)}"

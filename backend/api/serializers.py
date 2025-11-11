@@ -5,8 +5,6 @@ from .validation_schemas import (
     validate_hex_color,
     validate_non_empty_string,
     validate_provider_placement,
-    validate_ru_size,
-    validate_power_draw,
 )
 
 

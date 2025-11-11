@@ -4,7 +4,6 @@ These schemas serve as the single source of truth for validation rules
 and can be exposed via API for frontend validation.
 """
 
-from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 import re
 
@@ -14,7 +13,7 @@ import re
 RU_SIZE_MIN = 0
 RU_SIZE_MAX = 52
 POWER_DRAW_MIN = 0
-COLOR_HEX_PATTERN = re.compile(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
+COLOR_HEX_PATTERN = re.compile(r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
 
 
 # ==================== JSON Schema Definitions ====================
@@ -23,48 +22,33 @@ DEVICE_VALIDATION_SCHEMA = {
     "type": "object",
     "required": ["device_id", "name", "category", "ru_size", "power_draw", "color"],
     "properties": {
-        "device_id": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Unique device identifier"
-        },
-        "name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Device name"
-        },
+        "device_id": {"type": "string", "minLength": 1, "description": "Unique device identifier"},
+        "name": {"type": "string", "minLength": 1, "description": "Device name"},
         "category": {
             "type": "string",
             "minLength": 1,
-            "description": "Device category (server, storage, network, etc.)"
+            "description": "Device category (server, storage, network, etc.)",
         },
         "ru_size": {
             "type": "number",
             "minimum": RU_SIZE_MIN,
             "maximum": RU_SIZE_MAX,
-            "description": "Rack units consumed by device"
+            "description": "Rack units consumed by device",
         },
-        "power_draw": {
-            "type": "number",
-            "minimum": POWER_DRAW_MIN,
-            "description": "Power consumption in watts"
-        },
+        "power_draw": {"type": "number", "minimum": POWER_DRAW_MIN, "description": "Power consumption in watts"},
         "power_ports_used": {
             "type": "number",
             "minimum": 1,
             "default": 1,
-            "description": "Number of PDU power ports required"
+            "description": "Number of PDU power ports required",
         },
         "color": {
             "type": "string",
             "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-            "description": "Hex color code (e.g., #4CAF50)"
+            "description": "Hex color code (e.g., #4CAF50)",
         },
-        "description": {
-            "type": "string",
-            "description": "Optional device description"
-        }
-    }
+        "description": {"type": "string", "description": "Optional device description"},
+    },
 }
 
 RACK_CONFIG_VALIDATION_SCHEMA = {
@@ -75,23 +59,15 @@ RACK_CONFIG_VALIDATION_SCHEMA = {
             "type": "object",
             "required": ["totalPowerCapacity", "hvacCapacity", "ruPerRack"],
             "properties": {
-                "totalPowerCapacity": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "Total power capacity in watts"
-                },
-                "hvacCapacity": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "HVAC capacity in BTU/hr"
-                },
+                "totalPowerCapacity": {"type": "number", "minimum": 0, "description": "Total power capacity in watts"},
+                "hvacCapacity": {"type": "number", "minimum": 0, "description": "HVAC capacity in BTU/hr"},
                 "ruPerRack": {
                     "type": "number",
                     "minimum": 1,
                     "maximum": RU_SIZE_MAX,
-                    "description": "Rack units per rack"
-                }
-            }
+                    "description": "Rack units per rack",
+                },
+            },
         },
         "racks": {
             "type": "array",
@@ -99,133 +75,79 @@ RACK_CONFIG_VALIDATION_SCHEMA = {
                 "type": "object",
                 "required": ["id", "name", "devices"],
                 "properties": {
-                    "id": {
-                        "type": ["string", "number"],
-                        "description": "Rack identifier"
-                    },
-                    "name": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Rack name"
-                    },
+                    "id": {"type": ["string", "number"], "description": "Rack identifier"},
+                    "name": {"type": "string", "minLength": 1, "description": "Rack name"},
                     "devices": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "required": ["position", "ruSize"],
                             "properties": {
-                                "deviceId": {
-                                    "type": ["string", "number"],
-                                    "description": "Device identifier"
-                                },
-                                "id": {
-                                    "type": ["string", "number"],
-                                    "description": "Alternative device identifier"
-                                },
-                                "position": {
-                                    "type": "number",
-                                    "minimum": 1,
-                                    "description": "Starting RU position"
-                                },
+                                "deviceId": {"type": ["string", "number"], "description": "Device identifier"},
+                                "id": {"type": ["string", "number"], "description": "Alternative device identifier"},
+                                "position": {"type": "number", "minimum": 1, "description": "Starting RU position"},
                                 "ruSize": {
                                     "type": "number",
                                     "minimum": 1,
                                     "maximum": RU_SIZE_MAX,
-                                    "description": "Device size in RU"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+                                    "description": "Device size in RU",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
 }
 
 RACK_VALIDATION_SCHEMA = {
     "type": "object",
     "required": ["name"],
     "properties": {
-        "name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Rack name"
-        },
+        "name": {"type": "string", "minLength": 1, "description": "Rack name"},
         "ru_height": {
             "type": "number",
             "minimum": 1,
             "maximum": RU_SIZE_MAX,
             "default": 42,
-            "description": "Rack height in RU"
+            "description": "Rack height in RU",
         },
-        "description": {
-            "type": "string",
-            "description": "Optional rack description"
-        }
-    }
+        "description": {"type": "string", "description": "Optional rack description"},
+    },
 }
 
 PROVIDER_VALIDATION_SCHEMA = {
     "type": "object",
     "required": ["name", "type"],
     "properties": {
-        "name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Provider name"
-        },
-        "type": {
-            "type": "string",
-            "enum": ["power", "cooling"],
-            "description": "Provider type"
-        },
-        "description": {
-            "type": "string",
-            "description": "Optional provider description"
-        },
-        "location": {
-            "type": "string",
-            "description": "Physical location description"
-        },
-        "power_capacity": {
-            "type": "number",
-            "minimum": 0,
-            "default": 0,
-            "description": "Power capacity in watts"
-        },
+        "name": {"type": "string", "minLength": 1, "description": "Provider name"},
+        "type": {"type": "string", "enum": ["power", "cooling"], "description": "Provider type"},
+        "description": {"type": "string", "description": "Optional provider description"},
+        "location": {"type": "string", "description": "Physical location description"},
+        "power_capacity": {"type": "number", "minimum": 0, "default": 0, "description": "Power capacity in watts"},
         "power_ports_capacity": {
             "type": "number",
             "minimum": 0,
             "default": 0,
-            "description": "Number of power ports available"
+            "description": "Number of power ports available",
         },
-        "cooling_capacity": {
-            "type": "number",
-            "minimum": 0,
-            "default": 0,
-            "description": "Cooling capacity in BTU/hr"
-        },
+        "cooling_capacity": {"type": "number", "minimum": 0, "default": 0, "description": "Cooling capacity in BTU/hr"},
         "ru_size": {
             "type": "number",
             "minimum": 0,
             "maximum": RU_SIZE_MAX,
             "default": 0,
-            "description": "Rack units consumed (0 = not racked)"
+            "description": "Rack units consumed (0 = not racked)",
         },
-        "rack": {
-            "type": ["number", "null"],
-            "description": "Rack ID where provider is installed"
-        },
-        "position": {
-            "type": ["number", "null"],
-            "minimum": 1,
-            "description": "Starting RU position in rack"
-        }
-    }
+        "rack": {"type": ["number", "null"], "description": "Rack ID where provider is installed"},
+        "position": {"type": ["number", "null"], "minimum": 1, "description": "Starting RU position in rack"},
+    },
 }
 
 
 # ==================== Validation Helper Functions ====================
+
 
 def validate_hex_color(value):
     """
@@ -244,14 +166,12 @@ def validate_hex_color(value):
         raise serializers.ValidationError("Color is required")
 
     # Ensure # prefix
-    if not value.startswith('#'):
-        value = '#' + value
+    if not value.startswith("#"):
+        value = "#" + value
 
     # Validate hex format
     if not COLOR_HEX_PATTERN.match(value):
-        raise serializers.ValidationError(
-            "Color must be a valid hex code (e.g., #4CAF50 or #FFF)"
-        )
+        raise serializers.ValidationError("Color must be a valid hex code (e.g., #4CAF50 or #FFF)")
 
     return value
 
@@ -272,9 +192,7 @@ def validate_ru_size(value, min_val=RU_SIZE_MIN, max_val=RU_SIZE_MAX):
         raise serializers.ValidationError("RU size must be a number")
 
     if value < min_val or value > max_val:
-        raise serializers.ValidationError(
-            f"RU size must be between {min_val} and {max_val}"
-        )
+        raise serializers.ValidationError(f"RU size must be between {min_val} and {max_val}")
 
 
 def validate_power_draw(value):
@@ -291,9 +209,7 @@ def validate_power_draw(value):
         raise serializers.ValidationError("Power draw must be a number")
 
     if value < POWER_DRAW_MIN:
-        raise serializers.ValidationError(
-            f"Power draw must be at least {POWER_DRAW_MIN} watts"
-        )
+        raise serializers.ValidationError(f"Power draw must be at least {POWER_DRAW_MIN} watts")
 
 
 def validate_non_empty_string(value, field_name="Field"):
@@ -320,8 +236,7 @@ def validate_non_empty_string(value, field_name="Field"):
     return value
 
 
-def validate_provider_placement(ru_size, rack, position, rack_obj=None,
-                                provider_instance=None):
+def validate_provider_placement(ru_size, rack, position, rack_obj=None, provider_instance=None):
     """
     Validate provider placement rules.
 
@@ -341,16 +256,12 @@ def validate_provider_placement(ru_size, rack, position, rack_obj=None,
     # If ru_size is 0, rack and position must be null
     if ru_size == 0:
         if rack or position:
-            raise serializers.ValidationError(
-                "Providers with ru_size=0 cannot be placed in racks"
-            )
+            raise serializers.ValidationError("Providers with ru_size=0 cannot be placed in racks")
         return
 
     # If racked, must have both rack and position
     if (rack and not position) or (position and not rack):
-        raise serializers.ValidationError(
-            "Both rack and position must be set for racked providers"
-        )
+        raise serializers.ValidationError("Both rack and position must be set for racked providers")
 
     # If racked, validate placement
     if rack and position and rack_obj:
@@ -363,32 +274,28 @@ def validate_provider_placement(ru_size, rack, position, rack_obj=None,
 
         # Check for conflicts with existing devices
         for ru in range(position, position + ru_size):
-            device_conflict = RackDevice.objects.filter(
-                rack=rack_obj,
-                position__lte=ru,
-                position__gt=ru - models.F('device__ru_size')
-            ).exclude(
-                id=provider_instance.id if provider_instance else None
-            ).exists()
+            device_conflict = (
+                RackDevice.objects.filter(
+                    rack=rack_obj, position__lte=ru, position__gt=ru - models.F("device__ru_size")
+                )
+                .exclude(id=provider_instance.id if provider_instance else None)
+                .exists()
+            )
 
             if device_conflict:
-                raise serializers.ValidationError(
-                    f"Position conflict with device: RU {ru} is already occupied"
-                )
+                raise serializers.ValidationError(f"Position conflict with device: RU {ru} is already occupied")
 
         # Check for conflicts with other providers
-        provider_conflict = Provider.objects.filter(
-            rack=rack_obj,
-            position__lte=position + ru_size - 1,
-            position__gte=position - models.F('ru_size') + 1
-        ).exclude(
-            id=provider_instance.id if provider_instance else None
-        ).exists()
+        provider_conflict = (
+            Provider.objects.filter(
+                rack=rack_obj, position__lte=position + ru_size - 1, position__gte=position - models.F("ru_size") + 1
+            )
+            .exclude(id=provider_instance.id if provider_instance else None)
+            .exists()
+        )
 
         if provider_conflict:
-            raise serializers.ValidationError(
-                f"Position conflict with another provider at position {position}"
-            )
+            raise serializers.ValidationError(f"Position conflict with another provider at position {position}")
 
 
 def get_all_schemas():
@@ -407,5 +314,5 @@ def get_all_schemas():
             "RU_SIZE_MIN": RU_SIZE_MIN,
             "RU_SIZE_MAX": RU_SIZE_MAX,
             "POWER_DRAW_MIN": POWER_DRAW_MIN,
-        }
+        },
     }

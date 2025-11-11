@@ -1,6 +1,7 @@
 """
 Formatting helper functions for MCP server responses
 """
+
 from django.conf import settings
 
 
@@ -16,7 +17,7 @@ def format_hvac(btu_hr: float) -> str:
 
 def format_space_utilization(used: int, total: int) -> str:
     """Format rack space utilization"""
-    percentage = (used/total*100) if total > 0 else 0
+    percentage = (used / total * 100) if total > 0 else 0
     return f"{used}U / {total}U ({percentage:.1f}%)"
 
 

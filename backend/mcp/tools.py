@@ -1,6 +1,7 @@
 """
 MCP tool definitions for RackSum datacenter management
 """
+
 from mcp.types import Tool
 
 
@@ -17,11 +18,11 @@ def get_tool_definitions() -> list[Tool]:
                         "type": "string",
                         "enum": ["text", "json"],
                         "description": "Output format: 'text' (default, human-readable) or 'json' (structured data)",
-                        "default": "text"
+                        "default": "text",
                     }
                 },
-                "required": []
-            }
+                "required": [],
+            },
         ),
         Tool(
             name="get_site_details",
@@ -29,19 +30,16 @@ def get_tool_definitions() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site to get details for"
-                    },
+                    "site_name": {"type": "string", "description": "Name of the site to get details for"},
                     "output_format": {
                         "type": "string",
                         "enum": ["text", "json"],
                         "description": "Output format: 'text' (default, human-readable) or 'json' (structured data)",
-                        "default": "text"
-                    }
+                        "default": "text",
+                    },
                 },
-                "required": ["site_name"]
-            }
+                "required": ["site_name"],
+            },
         ),
         Tool(
             name="get_rack_details",
@@ -49,23 +47,17 @@ def get_tool_definitions() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site containing the rack"
-                    },
-                    "rack_name": {
-                        "type": "string",
-                        "description": "Name of the rack to get details for"
-                    },
+                    "site_name": {"type": "string", "description": "Name of the site containing the rack"},
+                    "rack_name": {"type": "string", "description": "Name of the rack to get details for"},
                     "output_format": {
                         "type": "string",
                         "enum": ["text", "json"],
                         "description": "Output format: 'text' (default, human-readable) or 'json' (structured data)",
-                        "default": "text"
-                    }
+                        "default": "text",
+                    },
                 },
-                "required": ["site_name", "rack_name"]
-            }
+                "required": ["site_name", "rack_name"],
+            },
         ),
         Tool(
             name="get_available_resources",
@@ -73,22 +65,19 @@ def get_tool_definitions() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "type": "string",
-                        "description": "Filter devices by category (optional)"
-                    },
+                    "category": {"type": "string", "description": "Filter devices by category (optional)"},
                     "limit": {
                         "type": "integer",
-                        "description": "Maximum number of devices to return (optional, default: no limit)"
+                        "description": "Maximum number of devices to return (optional, default: no limit)",
                     },
                     "output_format": {
                         "type": "string",
                         "enum": ["text", "json"],
                         "description": "Output format: 'text' (default, human-readable) or 'json' (structured data)",
-                        "default": "text"
-                    }
-                }
-            }
+                        "default": "text",
+                    },
+                },
+            },
         ),
         Tool(
             name="get_resource_summary",
@@ -100,11 +89,11 @@ def get_tool_definitions() -> list[Tool]:
                         "type": "string",
                         "enum": ["text", "json"],
                         "description": "Output format: 'text' (default, human-readable) or 'json' (structured data)",
-                        "default": "text"
+                        "default": "text",
                     }
                 },
-                "required": []
-            }
+                "required": [],
+            },
         ),
         Tool(
             name="create_device",
