@@ -6,6 +6,41 @@ import uuid
 User = get_user_model()
 
 
+class Provider(models.Model):
+    """
+    Represents a hardware/equipment provider
+    """
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    description = models.TextField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'providers'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class DeviceGroup(models.Model):
+    """
+    Represents a logical grouping of device types
+    """
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'device_groups'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Device(models.Model):
     """
     Represents a device type/template that can be placed in racks
@@ -13,6 +48,22 @@ class Device(models.Model):
     device_id = models.CharField(max_length=255, unique=True, db_index=True)
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100, db_index=True)
+    provider = models.ForeignKey(
+        Provider,
+        on_delete=models.SET_NULL,
+        related_name='devices',
+        db_column='provider_id',
+        null=True,
+        blank=True
+    )
+    device_group = models.ForeignKey(
+        DeviceGroup,
+        on_delete=models.SET_NULL,
+        related_name='devices',
+        db_column='device_group_id',
+        null=True,
+        blank=True
+    )
     ru_size = models.IntegerField(validators=[MinValueValidator(0)])
     power_draw = models.IntegerField(validators=[MinValueValidator(0)], help_text="Power consumption in watts")
     power_ports_used = models.IntegerField(

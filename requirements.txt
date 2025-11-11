@@ -14,5 +14,7 @@ webauthn==2.3.0
 cbor2==5.6.5
 # MCP Server support
 mcp==1.1.2
+uvicorn==0.32.1
+starlette==0.41.3
 # Sentry error tracking
 sentry-sdk[django]==2.21.0
