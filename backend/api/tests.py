@@ -71,15 +71,20 @@ class APIEndpointTest(TestCase):
         response = self.client.get("/api/devices")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertIsInstance(data, list)
+        # Response is paginated
+        self.assertIn("results", data)
+        self.assertIsInstance(data["results"], list)
+        self.assertGreater(len(data["results"]), 0)
 
     def test_sites_list_endpoint(self):
         """Test sites list endpoint"""
         response = self.client.get("/api/sites")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
+        # Response is paginated
+        self.assertIn("results", data)
+        self.assertIsInstance(data["results"], list)
+        self.assertGreater(len(data["results"]), 0)
 
     def test_site_detail_endpoint(self):
         """Test site detail endpoint"""
