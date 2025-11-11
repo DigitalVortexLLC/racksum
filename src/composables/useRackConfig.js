@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue'
 import { useDatabase } from './useDatabase'
+import { useResourceProviders } from './useResourceProviders'
 
 const STORAGE_KEY = 'racker-config'
 
@@ -162,8 +163,9 @@ export function useRackConfig() {
       return false
     }
 
-    // Check for overlapping devices
     const endPosition = position + ruSize - 1
+
+    // Check for overlapping devices
     for (const device of rack.devices) {
       // Skip the device we're moving (if any)
       if (excludeInstanceId && device.instanceId === excludeInstanceId) {
@@ -174,6 +176,18 @@ export function useRackConfig() {
 
       // Check if ranges overlap
       if (!(endPosition < device.position || position > deviceEnd)) {
+        return false
+      }
+    }
+
+    // Check for overlapping providers
+    const { getProvidersForRack } = useResourceProviders()
+    const providers = getProvidersForRack(rackId)
+    for (const provider of providers) {
+      const providerEnd = provider.position + provider.ruSize - 1
+
+      // Check if ranges overlap
+      if (!(endPosition < provider.position || position > providerEnd)) {
         return false
       }
     }
@@ -300,6 +314,73 @@ export function useRackConfig() {
     config.value.racks = newRacks
   }
 
+  // Provider placement functions
+  const canPlaceProvider = (rackId, position, ruSize, excludeProviderId = null) => {
+    const rack = config.value.racks.find(r => r.id === rackId)
+    if (!rack) return false
+
+    // Use rack-specific RU size if available, otherwise fall back to global setting
+    const maxRU = rack.ruSize || config.value.settings.ruPerRack
+
+    // Check if provider would exceed rack height
+    if (position + ruSize - 1 > maxRU) {
+      return false
+    }
+
+    const endPosition = position + ruSize - 1
+
+    // Check for overlapping devices
+    for (const device of rack.devices) {
+      const deviceEnd = device.position + device.ruSize - 1
+
+      // Check if ranges overlap
+      if (!(endPosition < device.position || position > deviceEnd)) {
+        return false
+      }
+    }
+
+    // Check for overlapping providers
+    const { getProvidersForRack } = useResourceProviders()
+    const providers = getProvidersForRack(rackId)
+    for (const provider of providers) {
+      // Skip the provider we're moving (if any)
+      if (excludeProviderId && provider.id === excludeProviderId) {
+        continue
+      }
+
+      const providerEnd = provider.position + provider.ruSize - 1
+
+      // Check if ranges overlap
+      if (!(endPosition < provider.position || position > providerEnd)) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  const addProviderToRack = (rackId, providerId, position) => {
+    const { getProviderById, placeProviderInRack } = useResourceProviders()
+    const provider = getProviderById(providerId)
+
+    if (!provider || !provider.ruSize || provider.ruSize === 0) {
+      return false
+    }
+
+    // Check if position is valid and has enough space
+    if (!canPlaceProvider(rackId, position, provider.ruSize)) {
+      return false
+    }
+
+    // Update provider with rack placement
+    return placeProviderInRack(providerId, rackId, position)
+  }
+
+  const removeProviderFromRack = (providerId) => {
+    const { removeProviderFromRack: removeProvider } = useResourceProviders()
+    return removeProvider(providerId)
+  }
+
   return {
     config,
     racks,
@@ -316,6 +397,9 @@ export function useRackConfig() {
     resetConfiguration,
     addRack,
     deleteRack,
-    reorderRacks
+    reorderRacks,
+    canPlaceProvider,
+    addProviderToRack,
+    removeProviderFromRack
   }
 }

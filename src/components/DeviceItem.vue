@@ -13,15 +13,8 @@
 
       <!-- Device info -->
       <div class="flex-1 min-w-0">
-        <div class="font-medium text-sm truncate flex items-center gap-2">
+        <div class="font-medium text-sm truncate">
           {{ device.name }}
-          <span
-            v-if="device.custom"
-            class="badge badge-primary badge-sm"
-            title="Custom device"
-          >
-            Custom
-          </span>
         </div>
         <div class="text-xs opacity-70">
           {{ device.ruSize }}U • {{ device.powerDraw }}W

@@ -28,7 +28,7 @@ A web-based tool for planning and visualizing server rack layouts with real-time
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v20 or higher)
 - npm
 - Python 3.8 or higher
 - MySQL server
@@ -310,7 +310,7 @@ racker/
 
 ### Development server won't start
 - Ensure port 5173 is not in use
-- Check Node.js version: `node --version` (should be v18+)
+- Check Node.js version: `node --version` (should be v20+)
 
 ### Production server issues
 - Ensure you ran `npm run build` first

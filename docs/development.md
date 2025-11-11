@@ -8,7 +8,7 @@ This guide helps you set up a development environment and contribute to Racker.
 
 Ensure you have installed:
 
-- Node.js 18+
+- Node.js 20+
 - Python 3.8+
 - MySQL 5.7+ (optional)
 - Git

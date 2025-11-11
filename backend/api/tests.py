@@ -8,10 +8,7 @@ class SiteModelTest(TestCase):
     """Test cases for Site model"""
 
     def setUp(self):
-        self.site = Site.objects.create(
-            name="Test Site",
-            description="A test site for unit tests"
-        )
+        self.site = Site.objects.create(name="Test Site", description="A test site for unit tests")
 
     def test_site_creation(self):
         """Test that a site can be created successfully"""
@@ -37,7 +34,7 @@ class DeviceModelTest(TestCase):
             power_draw=500,
             power_ports_used=2,
             color="#FF0000",
-            description="Test server device"
+            description="Test server device",
         )
 
     def test_device_creation(self):
@@ -49,7 +46,7 @@ class DeviceModelTest(TestCase):
 
     def test_device_str_representation(self):
         """Test string representation of device"""
-        self.assertEqual(str(self.device), "Test Device")
+        self.assertEqual(str(self.device), "Test Device (test-device-001)")
 
 
 class APIEndpointTest(TestCase):
@@ -57,35 +54,28 @@ class APIEndpointTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.site = Site.objects.create(
-            name="API Test Site",
-            description="Site for API testing"
-        )
+        self.site = Site.objects.create(name="API Test Site", description="Site for API testing")
 
     def test_auth_config_endpoint(self):
         """Test auth config endpoint returns correct data"""
-        response = self.client.get(reverse('auth-config'))
+        response = self.client.get(reverse("auth-config"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('require_auth', response.json())
-        self.assertIn('passkey_supported', response.json())
+        self.assertIn("require_auth", response.json())
+        self.assertIn("passkey_supported", response.json())
 
     def test_devices_list_endpoint(self):
         """Test devices list endpoint"""
         Device.objects.create(
-            device_id="api-test-device",
-            name="API Test Device",
-            category="network",
-            ru_size=1,
-            power_draw=100
+            device_id="api-test-device", name="API Test Device", category="network", ru_size=1, power_draw=100
         )
-        response = self.client.get('/api/devices')
+        response = self.client.get("/api/devices")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertIsInstance(data, list)
 
     def test_sites_list_endpoint(self):
         """Test sites list endpoint"""
-        response = self.client.get('/api/sites')
+        response = self.client.get("/api/sites")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertIsInstance(data, list)
@@ -93,17 +83,17 @@ class APIEndpointTest(TestCase):
 
     def test_site_detail_endpoint(self):
         """Test site detail endpoint"""
-        response = self.client.get(f'/api/sites/{self.site.id}')
+        response = self.client.get(f"/api/sites/{self.site.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data['name'], "API Test Site")
+        self.assertEqual(data["name"], "API Test Site")
 
     def test_site_by_uuid_endpoint(self):
         """Test fetching site by UUID"""
-        response = self.client.get(f'/api/sites/by-uuid/{self.site.uuid}')
+        response = self.client.get(f"/api/sites/by-uuid/{self.site.uuid}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data['uuid'], str(self.site.uuid))
+        self.assertEqual(data["uuid"], str(self.site.uuid))
 
 
 class RackModelTest(TestCase):
@@ -112,10 +102,7 @@ class RackModelTest(TestCase):
     def setUp(self):
         self.site = Site.objects.create(name="Rack Test Site")
         self.rack = Rack.objects.create(
-            site=self.site,
-            name="Test Rack",
-            ru_height=42,
-            description="Test rack for unit tests"
+            site=self.site, name="Test Rack", ru_height=42, description="Test rack for unit tests"
         )
 
     def test_rack_creation(self):

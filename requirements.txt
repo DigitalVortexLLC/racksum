@@ -16,5 +16,8 @@ cbor2==5.6.5
 mcp==1.1.2
 # Testing dependencies
 pytest-asyncio==0.23.5
+# HTTP transport for MCP server
+uvicorn==0.32.1
+starlette==0.41.3
 # Sentry error tracking
 sentry-sdk[django]==2.21.0

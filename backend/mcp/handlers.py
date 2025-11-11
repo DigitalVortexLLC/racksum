@@ -6,7 +6,7 @@ from typing import Optional
 from asgiref.sync import sync_to_async
 from mcp.types import TextContent
 
-from api.models import Site, Rack, Device, RackDevice
+from api.models import Site, Rack, Device, RackDevice, DeviceGroup, Provider
 from .formatters import format_power, format_hvac, format_space_utilization, calculate_heat_output
 from . import json_formatters
 
@@ -350,4 +350,177 @@ async def get_resource_summary(output_format: str = "text") -> list[TextContent]
             return f"Error retrieving resource summary: {str(e)}"
 
     result = await get_summary()
+    return [TextContent(type="text", text=result)]
+
+
+async def create_device(arguments: dict) -> list[TextContent]:
+    """Create a new device type"""
+    @sync_to_async
+    def create():
+        try:
+            logger.info(f"Creating new device: {arguments.get('device_id')}")
+            device = Device.objects.create(
+                device_id=arguments.get("device_id"),
+                name=arguments.get("name"),
+                category=arguments.get("category"),
+                ru_size=arguments.get("ru_size"),
+                power_draw=arguments.get("power_draw"),
+                power_ports_used=arguments.get("power_ports_used", 1),
+                color=arguments.get("color", "#000000"),
+                description=arguments.get("description", ""),
+            )
+            logger.info(f"Successfully created device: {device.device_id}")
+            return f"✅ Device created successfully!\n\nDevice ID: {device.device_id}\nName: {device.name}\nCategory: {device.category}\nSize: {device.ru_size}U\nPower: {device.power_draw}W"
+        except Exception as e:
+            logger.error(f"Error creating device: {e}", exc_info=True)
+            return f"❌ Error creating device: {str(e)}"
+
+    result = await create()
+    return [TextContent(type="text", text=result)]
+
+
+async def create_rack(arguments: dict) -> list[TextContent]:
+    """Create a new rack in a site"""
+    @sync_to_async
+    def create():
+        try:
+            site_name = arguments.get("site_name")
+            rack_name = arguments.get("rack_name")
+            logger.info(f"Creating rack '{rack_name}' in site '{site_name}'")
+
+            try:
+                site = Site.objects.get(name__iexact=site_name)
+            except Site.DoesNotExist:
+                logger.warning(f"Site '{site_name}' not found")
+                return f"❌ Site '{site_name}' not found."
+
+            # Check if rack already exists
+            if Rack.objects.filter(site=site, name__iexact=rack_name).exists():
+                logger.warning(f"Rack '{rack_name}' already exists in site '{site_name}'")
+                return f"❌ Rack '{rack_name}' already exists in site '{site_name}'."
+
+            rack = Rack.objects.create(
+                site=site,
+                name=rack_name,
+                ru_height=arguments.get("ru_height", 42),
+                description=arguments.get("description", ""),
+            )
+            logger.info(f"Successfully created rack: {rack.name}")
+            return f"✅ Rack created successfully!\n\nSite: {site.name}\nRack: {rack.name}\nHeight: {rack.ru_height}U"
+        except Exception as e:
+            logger.error(f"Error creating rack: {e}", exc_info=True)
+            return f"❌ Error creating rack: {str(e)}"
+
+    result = await create()
+    return [TextContent(type="text", text=result)]
+
+
+async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
+    """Delete a rack from a site"""
+    @sync_to_async
+    def delete():
+        try:
+            logger.info(f"Attempting to delete rack '{rack_name}' from site '{site_name}'")
+            try:
+                site = Site.objects.get(name__iexact=site_name)
+                rack = Rack.objects.get(site=site, name__iexact=rack_name)
+            except Site.DoesNotExist:
+                logger.warning(f"Site '{site_name}' not found")
+                return f"❌ Site '{site_name}' not found."
+            except Rack.DoesNotExist:
+                logger.warning(f"Rack '{rack_name}' not found in site '{site_name}'")
+                return f"❌ Rack '{rack_name}' not found in site '{site_name}'."
+
+            # Check if rack has devices
+            device_count = rack.rack_devices.count()
+            if device_count > 0:
+                logger.warning(f"Cannot delete rack '{rack_name}': contains {device_count} devices")
+                return f"❌ Cannot delete rack '{rack_name}': it contains {device_count} device(s). Remove all devices first."
+
+            rack.delete()
+            logger.info(f"Successfully deleted rack '{rack_name}' from site '{site_name}'")
+            return f"✅ Rack '{rack_name}' deleted successfully from site '{site_name}'."
+        except Exception as e:
+            logger.error(f"Error deleting rack: {e}", exc_info=True)
+            return f"❌ Error deleting rack: {str(e)}"
+
+    result = await delete()
+    return [TextContent(type="text", text=result)]
+
+
+async def update_site_name(old_name: str, new_name: str) -> list[TextContent]:
+    """Update a site's name"""
+    @sync_to_async
+    def update():
+        try:
+            logger.info(f"Attempting to rename site from '{old_name}' to '{new_name}'")
+            try:
+                site = Site.objects.get(name__iexact=old_name)
+            except Site.DoesNotExist:
+                logger.warning(f"Site '{old_name}' not found")
+                return f"❌ Site '{old_name}' not found."
+
+            # Check if new name already exists
+            if Site.objects.filter(name__iexact=new_name).exclude(id=site.id).exists():
+                logger.warning(f"Site named '{new_name}' already exists")
+                return f"❌ A site named '{new_name}' already exists."
+
+            old = site.name
+            site.name = new_name
+            site.save()
+            logger.info(f"Successfully renamed site from '{old}' to '{new_name}'")
+            return f"✅ Site name updated successfully!\n\nOld name: {old}\nNew name: {site.name}"
+        except Exception as e:
+            logger.error(f"Error updating site name: {e}", exc_info=True)
+            return f"❌ Error updating site name: {str(e)}"
+
+    result = await update()
+    return [TextContent(type="text", text=result)]
+
+
+async def create_device_group(arguments: dict) -> list[TextContent]:
+    """Create a new device group"""
+    @sync_to_async
+    def create():
+        try:
+            name = arguments.get("name")
+            logger.info(f"Creating device group: {name}")
+
+            if DeviceGroup.objects.filter(name__iexact=name).exists():
+                logger.warning(f"Device group '{name}' already exists")
+                return f"❌ Device group '{name}' already exists."
+
+            device_group = DeviceGroup.objects.create(name=name, description=arguments.get("description", ""))
+            logger.info(f"Successfully created device group: {device_group.name}")
+            return f"✅ Device group created successfully!\n\nName: {device_group.name}\nDescription: {device_group.description or 'N/A'}"
+        except Exception as e:
+            logger.error(f"Error creating device group: {e}", exc_info=True)
+            return f"❌ Error creating device group: {str(e)}"
+
+    result = await create()
+    return [TextContent(type="text", text=result)]
+
+
+async def create_provider(arguments: dict) -> list[TextContent]:
+    """Create a new hardware provider"""
+    @sync_to_async
+    def create():
+        try:
+            name = arguments.get("name")
+            logger.info(f"Creating provider: {name}")
+
+            if Provider.objects.filter(name__iexact=name).exists():
+                logger.warning(f"Provider '{name}' already exists")
+                return f"❌ Provider '{name}' already exists."
+
+            provider = Provider.objects.create(
+                name=name, description=arguments.get("description", ""), website=arguments.get("website", "")
+            )
+            logger.info(f"Successfully created provider: {provider.name}")
+            return f"✅ Provider created successfully!\n\nName: {provider.name}\nWebsite: {provider.website or 'N/A'}\nDescription: {provider.description or 'N/A'}"
+        except Exception as e:
+            logger.error(f"Error creating provider: {e}", exc_info=True)
+            return f"❌ Error creating provider: {str(e)}"
+
+    result = await create()
     return [TextContent(type="text", text=result)]

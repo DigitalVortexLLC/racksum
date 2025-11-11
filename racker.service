@@ -1,0 +1,50 @@
+[Unit]
+Description=Racker - Rack Diagram Planning Tool
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+# User and group to run as (change to your deployment user)
+User=www-data
+Group=www-data
+
+# Working directory
+WorkingDirectory=/opt/racker
+
+# Environment variables
+EnvironmentFile=/opt/racker/.env
+
+# Virtual environment and startup command
+ExecStart=/opt/racker/venv/bin/gunicorn \
+    --config /opt/racker/gunicorn.conf.py \
+    --chdir /opt/racker/backend \
+    backend.wsgi:application
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/racker
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=racker
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Graceful shutdown
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

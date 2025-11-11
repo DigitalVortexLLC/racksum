@@ -44,8 +44,8 @@ plugins:
   - search:
       lang: en
       separator: '[\s\-\.]'
-  - minify:
-      minify_html: true
+  # - minify:
+  #     minify_html: true
 
 markdown_extensions:
   - abbr
@@ -117,6 +117,8 @@ nav:
       - Deployment: deployment.md
       - Development: development.md
       - MCP Server Integration: mcp-server.md
+      - Custom Devices: CUSTOM_DEVICES_GUIDE.md
+      - Resource Providers: RESOURCE_PROVIDERS_GUIDE.md
   - API:
       - API Overview: api.md
       - API Workflow Guide: api-workflow.md
