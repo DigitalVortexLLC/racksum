@@ -13,17 +13,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import pymysql
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 import logging
 
-# Install PyMySQL as MySQLdb
-pymysql.install_as_MySQLdb()
-
 # Load environment variables
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / '.env')
+
+# Install PyMySQL as MySQLdb only when using MySQL
+if os.getenv("DB_ENGINE", "sqlite") == "mysql":
+    import pymysql
+    pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,12 +90,12 @@ if SENTRY_DSN:
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-6a_$0w=w(9n%ud1frq7+h&unrciyy-oe_@0il-xqyj-i1$h!q5"
+SECRET_KEY = os.getenv('SECRET_KEY', "django-insecure-6a_$0w=w(9n%ud1frq7+h&unrciyy-oe_@0il-xqyj-i1$h!q5")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']  # Configure appropriately for production
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -126,7 +127,8 @@ MIDDLEWARE = [
 ]
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development - configure for production
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if not CORS_ALLOW_ALL_ORIGINS else []
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "backend.urls"
