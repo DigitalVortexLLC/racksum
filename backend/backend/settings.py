@@ -236,6 +236,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'api.exception_handlers.custom_exception_handler',
 }
 
 # Allow URLs without trailing slashes

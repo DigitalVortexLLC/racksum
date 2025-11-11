@@ -129,6 +129,8 @@ class RackConfiguration(models.Model):
         indexes = [
             models.Index(fields=['site']),
             models.Index(fields=['name']),
+            # Composite index for common (site_id, name) lookups
+            models.Index(fields=['site', 'name'], name='rack_config_site_name_idx'),
         ]
 
     def __str__(self):
@@ -158,6 +160,8 @@ class Rack(models.Model):
         indexes = [
             models.Index(fields=['site']),
             models.Index(fields=['name']),
+            # Composite index for common (site_id, name) lookups
+            models.Index(fields=['site', 'name'], name='rack_site_name_idx'),
         ]
 
     def __str__(self):
@@ -287,6 +291,33 @@ class Provider(models.Model):
             models.Index(fields=['site']),
             models.Index(fields=['type']),
             models.Index(fields=['rack']),
+            # Composite indexes for common queries
+            models.Index(fields=['site', 'type'], name='provider_site_type_idx'),
+            models.Index(fields=['site', 'name'], name='provider_site_name_idx'),
+            models.Index(fields=['rack', 'position'], name='provider_rack_pos_idx'),
+        ]
+        constraints = [
+            # Check constraint: if ru_size is 0, rack and position must be null
+            models.CheckConstraint(
+                check=(
+                    models.Q(ru_size__gt=0) |
+                    (models.Q(ru_size=0) & models.Q(rack__isnull=True) & models.Q(position__isnull=True))
+                ),
+                name='provider_zero_rusize_not_racked'
+            ),
+            # Check constraint: if racked, must have both rack and position
+            models.CheckConstraint(
+                check=(
+                    (models.Q(rack__isnull=True) & models.Q(position__isnull=True)) |
+                    (models.Q(rack__isnull=False) & models.Q(position__isnull=False))
+                ),
+                name='provider_rack_position_together'
+            ),
+            # Check constraint: position must be positive if set
+            models.CheckConstraint(
+                check=models.Q(position__isnull=True) | models.Q(position__gte=1),
+                name='provider_position_positive'
+            ),
         ]
 
     def __str__(self):
@@ -313,6 +344,16 @@ class Provider(models.Model):
                     f"Provider placement exceeds rack height "
                     f"(position {self.position} + size {self.ru_size} > {self.rack.ru_height})"
                 )
+
+    def save(self, *args, **kwargs):
+        """
+        Override save to ensure validation is always run.
+        This ensures that clean() validation is enforced at the model level,
+        not just in forms or serializers.
+        """
+        # Run full model validation before saving
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Passkey(models.Model):

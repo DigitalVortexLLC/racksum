@@ -14,6 +14,7 @@ urlpatterns = [
     # Custom endpoints (order matters - specific before general)
     path('load', views.load_rack_config, name='load-config'),
     path('devices-json', views.get_devices, name='devices-json'),
+    path('validation-schemas', views.get_validation_schemas, name='validation-schemas'),
 
     # Rack configuration endpoints (specific before general)
     path('sites/<int:site_id>/racks/<str:rack_name>', views.get_rack_configuration, name='get-rack-config'),

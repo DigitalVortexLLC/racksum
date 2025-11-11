@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from django.db import models
 from .models import Site, RackConfiguration, Device, Rack, RackDevice, Provider
+from .validation_schemas import (
+    validate_hex_color,
+    validate_non_empty_string,
+    validate_provider_placement,
+    validate_ru_size,
+    validate_power_draw
+)
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -48,9 +55,7 @@ class RackConfigurationCreateSerializer(serializers.ModelSerializer):
         """
         Validate that name is not empty
         """
-        if not value or not value.strip():
-            raise serializers.ValidationError("Rack name is required")
-        return value.strip()
+        return validate_non_empty_string(value, "Rack name")
 
     def validate_config_data(self, value):
         """
@@ -84,17 +89,11 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     def validate_device_id(self, value):
         """Validate device_id is not empty"""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Device ID is required")
-        return value.strip()
+        return validate_non_empty_string(value, "Device ID")
 
     def validate_color(self, value):
         """Validate color is a valid hex code"""
-        if value and not value.startswith('#'):
-            value = '#' + value
-        if len(value) not in [4, 7]:  # #RGB or #RRGGBB
-            raise serializers.ValidationError("Color must be a valid hex code")
-        return value
+        return validate_hex_color(value)
 
 
 class RackDeviceSerializer(serializers.ModelSerializer):
@@ -211,9 +210,7 @@ class RackCreateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         """Validate rack name is not empty"""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Rack name is required")
-        return value.strip()
+        return validate_non_empty_string(value, "Rack name")
 
 
 class ProviderSerializer(serializers.ModelSerializer):
@@ -273,9 +270,7 @@ class ProviderCreateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         """Validate provider name is not empty"""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Provider name is required")
-        return value.strip()
+        return validate_non_empty_string(value, "Provider name")
 
     def validate(self, data):
         """Validate provider placement rules"""
@@ -283,51 +278,13 @@ class ProviderCreateSerializer(serializers.ModelSerializer):
         rack = data.get('rack')
         position = data.get('position')
 
-        # If ru_size is 0, rack and position must be null
-        if ru_size == 0:
-            if rack or position:
-                raise serializers.ValidationError(
-                    "Providers with ru_size=0 cannot be placed in racks"
-                )
-
-        # If racked, must have both rack and position
-        if (rack and not position) or (position and not rack):
-            raise serializers.ValidationError(
-                "Both rack and position must be set for racked providers"
-            )
-
-        # If racked, validate placement
-        if rack and position:
-            # Check if provider exceeds rack height
-            if position + ru_size - 1 > rack.ru_height:
-                raise serializers.ValidationError(
-                    f"Provider placement exceeds rack height "
-                    f"(position {position} + size {ru_size} > {rack.ru_height})"
-                )
-
-            # Check for conflicts with existing devices
-            for ru in range(position, position + ru_size):
-                device_conflict = RackDevice.objects.filter(
-                    rack=rack,
-                    position__lte=ru,
-                    position__gt=ru - models.F('device__ru_size')
-                ).exclude(id=self.instance.id if self.instance else None).exists()
-
-                if device_conflict:
-                    raise serializers.ValidationError(
-                        f"Position conflict with device: RU {ru} is already occupied"
-                    )
-
-            # Check for conflicts with other providers
-            provider_conflict = Provider.objects.filter(
-                rack=rack,
-                position__lte=position + ru_size - 1,
-                position__gte=position - models.F('ru_size') + 1
-            ).exclude(id=self.instance.id if self.instance else None).exists()
-
-            if provider_conflict:
-                raise serializers.ValidationError(
-                    f"Position conflict with another provider at position {position}"
-                )
+        # Use centralized validation
+        validate_provider_placement(
+            ru_size=ru_size,
+            rack=rack,
+            position=position,
+            rack_obj=rack,
+            provider_instance=self.instance
+        )
 
         return data
