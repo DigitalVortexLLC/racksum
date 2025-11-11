@@ -220,12 +220,11 @@ class RackDevice(models.Model):
 
 class Provider(models.Model):
     """
-    Represents a resource provider (power, cooling, network) that can optionally consume RU space
+    Represents a resource provider (power, cooling) that can optionally consume RU space
     """
     PROVIDER_TYPES = [
         ('power', 'Power'),
         ('cooling', 'Cooling'),
-        ('network', 'Network'),
     ]
 
     site = models.ForeignKey(
@@ -254,11 +253,6 @@ class Provider(models.Model):
         validators=[MinValueValidator(0)],
         default=0,
         help_text="Cooling capacity in BTU/hr"
-    )
-    network_capacity = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=0,
-        help_text="Network capacity in Gbps"
     )
 
     # RU space consumption fields (optional rack placement)

@@ -1182,9 +1182,6 @@
             <option value="cooling">
               Cooling (HVAC, CRAC, CRAH)
             </option>
-            <option value="network">
-              Network (Switch, Router, Uplink)
-            </option>
           </select>
           <label class="label">
             <span class="label-text-alt">What type of resource does this provide?</span>
@@ -1252,27 +1249,6 @@
           </label>
         </div>
 
-        <!-- Network Capacity (shown for network type) -->
-        <div
-          v-if="newProvider.type === 'network'"
-          class="mb-4"
-        >
-          <label class="label">
-            <span class="label-text">Network Capacity (Gbps) *</span>
-          </label>
-          <input
-            v-model.number="newProvider.networkCapacity"
-            type="number"
-            min="0"
-            step="0.1"
-            placeholder="e.g., 10"
-            class="input input-bordered w-full"
-          >
-          <label class="label">
-            <span class="label-text-alt">Total bandwidth provided</span>
-          </label>
-        </div>
-
         <div class="mb-4">
           <label class="label">
             <span class="label-text">Location (Optional)</span>
@@ -1283,6 +1259,24 @@
             placeholder="e.g., Row A, Room 101, Cabinet 5"
             class="input input-bordered w-full"
           >
+        </div>
+
+        <!-- RU Size (optional - 0 means not racked) -->
+        <div class="mb-4">
+          <label class="label">
+            <span class="label-text">RU Size (Rack Units)</span>
+          </label>
+          <input
+            v-model.number="newProvider.ruSize"
+            type="number"
+            min="0"
+            max="42"
+            placeholder="0 = not racked"
+            class="input input-bordered w-full"
+          >
+          <label class="label">
+            <span class="label-text-alt">If this provider requires rack space, it will appear in Unracked Devices. Set to 0 for wall-mounted or external providers.</span>
+          </label>
         </div>
 
         <div class="mb-4">
@@ -1389,9 +1383,9 @@ const newProvider = ref({
   powerCapacity: 0,
   powerPortsCapacity: 0,
   coolingCapacityTons: 0,
-  networkCapacity: 0,
   location: '',
-  description: ''
+  description: '',
+  ruSize: 0
 });
 
 const importMode = ref('merge');

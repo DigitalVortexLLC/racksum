@@ -1,6 +1,6 @@
-# RackSum Production Deployment Guide
+# Racker Production Deployment Guide
 
-This guide covers deploying RackSum in a production environment using systemd and Gunicorn with Uvicorn workers.
+This guide covers deploying Racker in a production environment using systemd and Gunicorn with Uvicorn workers.
 
 ## Table of Contents
 
@@ -21,15 +21,15 @@ For a quick production deployment on a systemd-based Linux system:
 
 ```bash
 # Clone or copy the repository to your server
-git clone https://github.com/yourusername/racksum.git
-cd racksum
+git clone https://github.com/yourusername/racker.git
+cd racker
 
 # Run the automated deployment script
 sudo ./deploy_production.sh
 ```
 
 The script will:
-- Install to `/opt/racksum`
+- Install to `/opt/racker`
 - Create a systemd service
 - Set up the database
 - Configure file permissions
@@ -39,16 +39,16 @@ After deployment:
 
 ```bash
 # Edit configuration
-sudo nano /opt/racksum/.env
+sudo nano /opt/racker/.env
 
 # Start the service
-sudo systemctl start racksum
+sudo systemctl start racker
 
 # Check status
-sudo systemctl status racksum
+sudo systemctl status racker
 
 # View logs
-sudo journalctl -u racksum -f
+sudo journalctl -u racker -f
 ```
 
 ## Manual Deployment
@@ -79,14 +79,14 @@ sudo apt install -y mysql-server
 
 ```bash
 # Create installation directory
-sudo mkdir -p /opt/racksum
+sudo mkdir -p /opt/racker
 
 # Set ownership (replace with your deployment user)
-sudo chown $USER:$USER /opt/racksum
+sudo chown $USER:$USER /opt/racker
 
 # Copy application files
-cp -r /path/to/racksum/* /opt/racksum/
-cd /opt/racksum
+cp -r /path/to/racker/* /opt/racker/
+cd /opt/racker
 ```
 
 ### Step 3: Set Up Environment
@@ -112,15 +112,15 @@ GUNICORN_WORKERS=4  # 2-4 x CPU cores
 
 # Database (recommended: MySQL)
 DB_ENGINE=mysql
-DB_NAME=racksum
-DB_USER=racksum_user
+DB_NAME=racker
+DB_USER=racker_user
 DB_PASSWORD=your_secure_password
 DB_HOST=localhost
 DB_PORT=3306
 
 # WebAuthn (adjust for your domain)
 WEBAUTHN_RP_ID=yourdomain.com
-WEBAUTHN_RP_NAME=RackSum
+WEBAUTHN_RP_NAME=Racker
 WEBAUTHN_ORIGIN=https://yourdomain.com
 
 # Enable authentication
@@ -180,22 +180,22 @@ python manage.py createsuperuser
 
 ```bash
 # Copy service file (adjust paths if needed)
-sudo cp /opt/racksum/racksum.service /etc/systemd/system/
+sudo cp /opt/racker/racker.service /etc/systemd/system/
 
 # Edit service file to match your setup
-sudo nano /etc/systemd/system/racksum.service
+sudo nano /etc/systemd/system/racker.service
 
 # Reload systemd
 sudo systemctl daemon-reload
 
 # Enable service
-sudo systemctl enable racksum
+sudo systemctl enable racker
 
 # Start service
-sudo systemctl start racksum
+sudo systemctl start racker
 
 # Check status
-sudo systemctl status racksum
+sudo systemctl status racker
 ```
 
 ## Configuration
@@ -226,7 +226,7 @@ To customize:
 
 ```python
 # Edit gunicorn.conf.py
-nano /opt/racksum/gunicorn.conf.py
+nano /opt/racker/gunicorn.conf.py
 ```
 
 ## Systemd Service Management
@@ -235,48 +235,48 @@ nano /opt/racksum/gunicorn.conf.py
 
 ```bash
 # Start service
-sudo systemctl start racksum
+sudo systemctl start racker
 
 # Stop service
-sudo systemctl stop racksum
+sudo systemctl stop racker
 
 # Restart service
-sudo systemctl restart racksum
+sudo systemctl restart racker
 
 # Reload configuration (graceful)
-sudo systemctl reload racksum
+sudo systemctl reload racker
 
 # Check status
-sudo systemctl status racksum
+sudo systemctl status racker
 
 # Enable on boot
-sudo systemctl enable racksum
+sudo systemctl enable racker
 
 # Disable on boot
-sudo systemctl disable racksum
+sudo systemctl disable racker
 ```
 
 ### View Logs
 
 ```bash
 # Follow logs in real-time
-sudo journalctl -u racksum -f
+sudo journalctl -u racker -f
 
 # View last 100 lines
-sudo journalctl -u racksum -n 100
+sudo journalctl -u racker -n 100
 
 # View logs since yesterday
-sudo journalctl -u racksum --since yesterday
+sudo journalctl -u racker --since yesterday
 
 # View logs with priority
-sudo journalctl -u racksum -p err
+sudo journalctl -u racker -p err
 ```
 
 ## Nginx Reverse Proxy
 
 ### Basic Configuration
 
-Create `/etc/nginx/sites-available/racksum`:
+Create `/etc/nginx/sites-available/racker`:
 
 ```nginx
 server {
@@ -329,14 +329,14 @@ server {
 
     # Static files (served directly by nginx)
     location /static/ {
-        alias /opt/racksum/backend/staticfiles/;
+        alias /opt/racker/backend/staticfiles/;
         expires 30d;
         add_header Cache-Control "public, immutable";
     }
 
     # Media files
     location /media/ {
-        alias /opt/racksum/backend/media/;
+        alias /opt/racker/backend/media/;
         expires 30d;
         add_header Cache-Control "public";
     }
@@ -347,7 +347,7 @@ Enable the site:
 
 ```bash
 # Create symlink
-sudo ln -s /etc/nginx/sites-available/racksum /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/racker /etc/nginx/sites-enabled/
 
 # Test configuration
 sudo nginx -t
@@ -378,23 +378,23 @@ sudo certbot renew --dry-run
 
 ```bash
 # Real-time logs
-sudo journalctl -u racksum -f
+sudo journalctl -u racker -f
 
 # Error logs only
-sudo journalctl -u racksum -p err -f
+sudo journalctl -u racker -p err -f
 
 # JSON-formatted logs
-sudo journalctl -u racksum -o json-pretty
+sudo journalctl -u racker -o json-pretty
 ```
 
 ### System Monitoring
 
 ```bash
 # Check service status
-sudo systemctl status racksum
+sudo systemctl status racker
 
 # Check resource usage
-sudo systemctl status racksum --no-pager -l
+sudo systemctl status racker --no-pager -l
 
 # View worker processes
 ps aux | grep gunicorn
@@ -418,14 +418,14 @@ SENTRY_PROFILES_SAMPLE_RATE=0.1
 
 ```bash
 # Check service status
-sudo systemctl status racksum
+sudo systemctl status racker
 
 # View full logs
-sudo journalctl -u racksum -n 100 --no-pager
+sudo journalctl -u racker -n 100 --no-pager
 
 # Check configuration
-source /opt/racksum/venv/bin/activate
-cd /opt/racksum/backend
+source /opt/racker/venv/bin/activate
+cd /opt/racker/backend
 python manage.py check
 ```
 
@@ -433,18 +433,18 @@ python manage.py check
 
 ```bash
 # Fix ownership
-sudo chown -R www-data:www-data /opt/racksum
+sudo chown -R www-data:www-data /opt/racker
 
 # Fix permissions
-sudo chmod -R 755 /opt/racksum
-sudo chmod 600 /opt/racksum/.env
+sudo chmod -R 755 /opt/racker
+sudo chmod 600 /opt/racker/.env
 ```
 
 ### Database Connection Issues
 
 ```bash
 # Test database connection
-cd /opt/racksum/backend
+cd /opt/racker/backend
 source ../venv/bin/activate
 python manage.py dbshell
 
@@ -466,10 +466,10 @@ sudo kill -9 <PID>
 
 ```bash
 # Check logs
-sudo journalctl -u racksum -p err
+sudo journalctl -u racker -p err
 
 # Restart service
-sudo systemctl restart racksum
+sudo systemctl restart racker
 
 # Adjust worker count in .env
 GUNICORN_WORKERS=2  # Reduce if running out of memory
@@ -513,20 +513,20 @@ Ensure nginx is serving static files with proper caching headers (see nginx conf
 
 ```bash
 # MySQL backup
-mysqldump -u racksum_user -p racksum > backup_$(date +%Y%m%d).sql
+mysqldump -u racker_user -p racker > backup_$(date +%Y%m%d).sql
 
 # Restore
-mysql -u racksum_user -p racksum < backup_20231115.sql
+mysql -u racker_user -p racker < backup_20231115.sql
 ```
 
 ### Application Backup
 
 ```bash
 # Backup entire application
-sudo tar -czf racksum_backup_$(date +%Y%m%d).tar.gz /opt/racksum
+sudo tar -czf racker_backup_$(date +%Y%m%d).tar.gz /opt/racker
 
 # Restore
-sudo tar -xzf racksum_backup_20231115.tar.gz -C /
+sudo tar -xzf racker_backup_20231115.tar.gz -C /
 ```
 
 ## Security Checklist
@@ -548,5 +548,5 @@ sudo tar -xzf racksum_backup_20231115.tar.gz -C /
 ## Support
 
 For issues or questions:
-- GitHub Issues: https://github.com/yourusername/racksum/issues
-- Documentation: https://github.com/yourusername/racksum/wiki
+- GitHub Issues: https://github.com/yourusername/racker/issues
+- Documentation: https://github.com/yourusername/racker/wiki

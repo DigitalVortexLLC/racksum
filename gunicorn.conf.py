@@ -1,5 +1,5 @@
 """
-Gunicorn configuration file for RackSum production deployment
+Gunicorn configuration file for Racker production deployment
 """
 import os
 import multiprocessing
@@ -40,7 +40,7 @@ loglevel = os.getenv('GUNICORN_LOG_LEVEL', 'info')
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
 
 # Process naming
-proc_name = 'racksum'
+proc_name = 'racker'
 
 # Server mechanics
 daemon = False  # We'll use systemd for daemonization

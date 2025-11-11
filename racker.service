@@ -1,5 +1,5 @@
 [Unit]
-Description=RackSum - Rack Diagram Planning Tool
+Description=Racker - Rack Diagram Planning Tool
 After=network.target
 Wants=network-online.target
 
@@ -10,15 +10,15 @@ User=www-data
 Group=www-data
 
 # Working directory
-WorkingDirectory=/opt/racksum
+WorkingDirectory=/opt/racker
 
 # Environment variables
-EnvironmentFile=/opt/racksum/.env
+EnvironmentFile=/opt/racker/.env
 
 # Virtual environment and startup command
-ExecStart=/opt/racksum/venv/bin/gunicorn \
-    --config /opt/racksum/gunicorn.conf.py \
-    --chdir /opt/racksum/backend \
+ExecStart=/opt/racker/venv/bin/gunicorn \
+    --config /opt/racker/gunicorn.conf.py \
+    --chdir /opt/racker/backend \
     backend.wsgi:application
 
 # Restart policy
@@ -30,12 +30,12 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/racksum
+ReadWritePaths=/opt/racker
 
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=racksum
+SyslogIdentifier=racker
 
 # Resource limits
 LimitNOFILE=65536

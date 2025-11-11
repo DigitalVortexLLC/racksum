@@ -1,6 +1,6 @@
 #!/bin/bash
-# RackSum Production Deployment Script
-# This script sets up RackSum for production deployment with systemd
+# Racker Production Deployment Script
+# This script sets up Racker for production deployment with systemd
 
 set -e  # Exit on error
 
@@ -12,12 +12,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-INSTALL_DIR="/opt/racksum"
-SERVICE_NAME="racksum"
+INSTALL_DIR="/opt/racker"
+SERVICE_NAME="racker"
 SERVICE_USER="www-data"
 SERVICE_GROUP="www-data"
 
-echo -e "${BLUE}=== RackSum Production Deployment ===${NC}"
+echo -e "${BLUE}=== Racker Production Deployment ===${NC}"
 echo ""
 
 # Check if running as root
@@ -35,7 +35,7 @@ fi
 
 # Ask for confirmation
 echo -e "${YELLOW}This script will:${NC}"
-echo "  - Install RackSum to ${INSTALL_DIR}"
+echo "  - Install Racker to ${INSTALL_DIR}"
 echo "  - Create systemd service as ${SERVICE_NAME}"
 echo "  - Run as user ${SERVICE_USER}"
 echo ""
@@ -168,10 +168,10 @@ echo -e "${GREEN}✓ Permissions set${NC}"
 echo -e "${BLUE}[10/10] Installing systemd service...${NC}"
 
 # Update service file with actual paths
-sed -e "s|/opt/racksum|${INSTALL_DIR}|g" \
+sed -e "s|/opt/racker|${INSTALL_DIR}|g" \
     -e "s|User=www-data|User=${SERVICE_USER}|g" \
     -e "s|Group=www-data|Group=${SERVICE_GROUP}|g" \
-    "${INSTALL_DIR}/racksum.service" > "/etc/systemd/system/${SERVICE_NAME}.service"
+    "${INSTALL_DIR}/racker.service" > "/etc/systemd/system/${SERVICE_NAME}.service"
 
 # Reload systemd
 systemctl daemon-reload
