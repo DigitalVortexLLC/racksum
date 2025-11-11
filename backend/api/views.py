@@ -26,6 +26,7 @@ from .serializers import (
     ProviderSerializer,
     ProviderCreateSerializer
 )
+from .validation_schemas import get_all_schemas
 
 
 @extend_schema_view(
@@ -405,6 +406,27 @@ def get_devices(request):
     except Exception as e:
         return Response(
             {'error': 'Failed to load devices', 'details': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@extend_schema(
+    summary="Get validation schemas",
+    description="Retrieve centralized validation schemas for frontend validation",
+    tags=["Validation"]
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_validation_schemas(request):
+    """
+    Get all validation schemas for frontend use
+    """
+    try:
+        schemas = get_all_schemas()
+        return Response(schemas)
+    except Exception as e:
+        return Response(
+            {'error': 'Failed to retrieve validation schemas', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
