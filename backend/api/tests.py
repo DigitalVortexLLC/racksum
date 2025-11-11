@@ -49,7 +49,7 @@ class DeviceModelTest(TestCase):
 
     def test_device_str_representation(self):
         """Test string representation of device"""
-        self.assertEqual(str(self.device), "Test Device")
+        self.assertEqual(str(self.device), "Test Device (test-device-001)")
 
 
 class APIEndpointTest(TestCase):
