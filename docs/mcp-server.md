@@ -309,6 +309,47 @@ The MCP server uses a modular architecture for better maintainability:
 - **Reusability**: Formatters and utilities can be reused across handlers
 - **Readability**: Smaller, focused files are easier to understand and navigate
 
+### Testing
+
+The MCP server includes comprehensive test coverage:
+
+- `/backend/mcp/tests/` - Test suite directory
+  - `test_formatters.py` - Tests for formatting functions (18 tests)
+  - `test_tools.py` - Tests for tool definitions (15 tests)
+  - `test_handlers.py` - Tests for handler implementations (22 tests)
+- `/backend/pytest.ini` - Pytest configuration
+
+**Running Tests:**
+
+```bash
+# Run all MCP tests
+cd backend
+pytest mcp/tests/ -v
+
+# Run with coverage
+pytest mcp/tests/ -v --cov=mcp --cov-report=term-missing
+
+# Run specific test file
+pytest mcp/tests/test_formatters.py -v
+
+# Run specific test
+pytest mcp/tests/test_formatters.py::TestFormatters::test_format_power_basic -v
+```
+
+**Test Coverage:**
+- 55+ test cases covering all MCP functionality
+- Unit tests for formatters (pure functions)
+- Integration tests for handlers (database operations)
+- Parametrized tests for edge cases
+- Async test support with pytest-asyncio
+- Tests run automatically in CI/CD pipeline
+
+**Continuous Integration:**
+- Tests run on every push and pull request
+- Tested against Python 3.10, 3.11, and 3.12
+- MySQL database integration tests
+- Code coverage reporting
+
 ### Dependencies
 
 - **mcp**: Model Context Protocol Python SDK

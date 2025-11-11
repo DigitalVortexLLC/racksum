@@ -86,7 +86,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install flake8 black pylint pytest pytest-django pytest-cov
+        pip install flake8 black pylint pytest pytest-django pytest-cov pytest-asyncio
 
     - name: Run Black (code formatter check)
       run: black --check backend/
@@ -137,6 +137,31 @@ jobs:
       run: |
         python manage.py test --verbosity=2
       if: always()
+
+    - name: Run MCP Server tests (pytest)
+      working-directory: backend
+      env:
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_NAME: racker_test
+        DB_USER: root
+        DB_PASSWORD: test_password
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+        WATTS_TO_BTU: '3.412'
+        BTU_PER_TON: '12000'
+      run: |
+        pytest mcp/tests/ -v --cov=mcp --cov-report=term-missing
+      if: always()
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.12'
+      with:
+        file: ./backend/.coverage
+        flags: mcp-server
+        name: mcp-coverage
+      continue-on-error: true
 
   # Documentation build test
   docs:
