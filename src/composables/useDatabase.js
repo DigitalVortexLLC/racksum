@@ -1,6 +1,9 @@
 import { ref } from 'vue';
+import { logError, logWarn } from '../utils/logger';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_TIMEOUT = 30000; // 30 seconds
 
 // Reactive state for current site
 const currentSite = ref(null);
@@ -68,9 +71,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/api/sites`, {
         credentials: 'same-origin',
-      });
+      }, API_TIMEOUT);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch sites: ${response.statusText}`);
@@ -80,7 +83,7 @@ export function useDatabase() {
       return sites.value;
     } catch (err) {
       error.value = err.message;
-      console.error('Error fetching sites:', err);
+      logError('Error fetching sites', err);
       throw err;
     } finally {
       loading.value = false;
@@ -95,9 +98,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/sites`,
-        createFetchOptions('POST', { name, description })
+        createFetchOptions('POST', { name, description }),
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -110,7 +114,7 @@ export function useDatabase() {
       return site;
     } catch (err) {
       error.value = err.message;
-      console.error('Error creating site:', err);
+      logError('Error creating site', err);
       throw err;
     } finally {
       loading.value = false;
@@ -125,9 +129,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/sites/${id}`,
-        createFetchOptions('PUT', { name, description })
+        createFetchOptions('PUT', { name, description }),
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -144,7 +149,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error updating site:', err);
+      logError('Error updating site', err);
       throw err;
     } finally {
       loading.value = false;
@@ -159,9 +164,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/sites/${id}`,
-        createFetchOptions('DELETE')
+        createFetchOptions('DELETE'),
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -180,7 +186,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error deleting site:', err);
+      logError('Error deleting site', err);
       throw err;
     } finally {
       loading.value = false;
@@ -227,7 +233,7 @@ export function useDatabase() {
         currentRackName.value = savedRackName;
       }
     } catch (err) {
-      console.error('Error loading current site:', err);
+      logError('Error loading current site', err);
     }
   }
 
@@ -239,9 +245,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/by-uuid/${uuid}`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/api/sites/by-uuid/${uuid}`, {
         credentials: 'same-origin',
-      });
+      }, API_TIMEOUT);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch site: ${response.statusText}`);
@@ -252,7 +258,7 @@ export function useDatabase() {
       return site;
     } catch (err) {
       error.value = err.message;
-      console.error('Error fetching site by UUID:', err);
+      logError('Error fetching site by UUID', err);
       throw err;
     } finally {
       loading.value = false;
@@ -270,17 +276,18 @@ export function useDatabase() {
 
     try {
       // Silent save - don't set loading state to avoid UI flicker
-      await fetch(
+      await fetchWithTimeout(
         `${API_BASE_URL}/api/sites/${currentSite.value.id}/racks`,
         createFetchOptions('POST', {
           name: currentRackName.value,
           configData,
           description: null,
-        })
+        }),
+        API_TIMEOUT
       );
       // Don't throw errors or show notifications for auto-save
     } catch (err) {
-      console.warn('Auto-save failed:', err);
+      logWarn('Auto-save failed', { error: err });
     }
   }
 
@@ -296,13 +303,14 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/sites/${siteId}/racks`,
         createFetchOptions('POST', {
           name: rackName,
           configData,
           description,
-        })
+        }),
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -313,7 +321,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error saving rack configuration:', err);
+      logError('Error saving rack configuration', err);
       throw err;
     } finally {
       loading.value = false;
@@ -328,9 +336,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sites/${siteId}/racks`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/api/sites/${siteId}/racks`, {
         credentials: 'same-origin',
-      });
+      }, API_TIMEOUT);
 
       if (!response.ok) {
         throw new Error(`Failed to load rack configurations: ${response.statusText}`);
@@ -339,7 +347,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error loading rack configurations:', err);
+      logError('Error loading rack configurations', err);
       throw err;
     } finally {
       loading.value = false;
@@ -354,8 +362,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/sites/${siteId}/racks/${encodeURIComponent(rackName)}`
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/sites/${siteId}/racks/${encodeURIComponent(rackName)}`,
+        {},
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -366,7 +376,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error loading rack configuration:', err);
+      logError('Error loading rack configuration', err);
       throw err;
     } finally {
       loading.value = false;
@@ -381,9 +391,10 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/racks/${rackId}`,
-        createFetchOptions('DELETE')
+        createFetchOptions('DELETE'),
+        API_TIMEOUT
       );
 
       if (!response.ok) {
@@ -394,7 +405,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error deleting rack configuration:', err);
+      logError('Error deleting rack configuration', err);
       throw err;
     } finally {
       loading.value = false;
@@ -409,9 +420,9 @@ export function useDatabase() {
     error.value = null;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/racks`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/api/racks`, {
         credentials: 'same-origin',
-      });
+      }, API_TIMEOUT);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch rack configurations: ${response.statusText}`);
@@ -420,7 +431,7 @@ export function useDatabase() {
       return await response.json();
     } catch (err) {
       error.value = err.message;
-      console.error('Error fetching rack configurations:', err);
+      logError('Error fetching rack configurations', err);
       throw err;
     } finally {
       loading.value = false;

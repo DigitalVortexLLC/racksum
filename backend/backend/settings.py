@@ -243,11 +243,41 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
     "EXCEPTION_HANDLER": "api.exception_handlers.custom_exception_handler",
 }
 
 # Allow URLs without trailing slashes
 APPEND_SLASH = False
+
+# Cache configuration
+# Use Redis if available, otherwise use local memory cache
+REDIS_URL = os.getenv("REDIS_URL", "")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+            "KEY_PREFIX": "racker",
+            "TIMEOUT": 300,  # 5 minutes default
+        }
+    }
+else:
+    # Local memory cache for development
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "racker-cache",
+            "OPTIONS": {
+                "MAX_ENTRIES": 1000,
+            },
+            "TIMEOUT": 300,  # 5 minutes default
+        }
+    }
 
 # JSON parsing limit (match Express limit of 10mb)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB

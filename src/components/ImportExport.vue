@@ -147,6 +147,7 @@
 import { ref, computed } from 'vue'
 import { useRackConfig } from '../composables/useRackConfig'
 import { useToast } from '../composables/useToast'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const emit = defineEmits(['close'])
 
@@ -172,7 +173,7 @@ const copyToClipboard = async () => {
       copyButtonText.value = 'Copy to Clipboard'
     }, 2000)
   } catch (error) {
-    console.error('Failed to copy:', error)
+    logError('Failed to copy', error)
     showError('Copy failed', 'Failed to copy configuration to clipboard')
   }
 }
@@ -204,6 +205,7 @@ const loadFromJson = () => {
     }, 1500)
   } catch (error) {
     importError.value = 'Invalid JSON: ' + error.message
+    logError('Import failed', error)
     showError('Import failed', error.message)
   }
 }

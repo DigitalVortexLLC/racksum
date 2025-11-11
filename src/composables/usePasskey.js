@@ -2,6 +2,7 @@
  * Composable for WebAuthn/Passkey authentication
  */
 import { ref } from 'vue';
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -74,7 +75,7 @@ export function usePasskey() {
         return data;
       }
     } catch (err) {
-      console.error('Failed to get auth config:', err);
+      logError('Failed to get auth config', err);
     }
     return { require_auth: false, passkey_supported: true };
   }
@@ -169,7 +170,7 @@ export function usePasskey() {
       return result;
     } catch (err) {
       error.value = err.message;
-      console.error('Passkey registration failed:', err);
+      logError('Passkey registration failed', err);
       throw err;
     } finally {
       loading.value = false;
@@ -265,7 +266,7 @@ export function usePasskey() {
       return result;
     } catch (err) {
       error.value = err.message;
-      console.error('Passkey authentication failed:', err);
+      logError('Passkey authentication failed', err);
       throw err;
     } finally {
       loading.value = false;
@@ -287,7 +288,7 @@ export function usePasskey() {
         return data.user;
       }
     } catch (err) {
-      console.error('Failed to get current user:', err);
+      logError('Failed to get current user', err);
     }
     return null;
   }
@@ -309,7 +310,7 @@ export function usePasskey() {
         currentUser.value = null;
       }
     } catch (err) {
-      console.error('Logout failed:', err);
+      logError('Logout failed', err);
     }
   }
 

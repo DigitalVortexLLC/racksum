@@ -256,6 +256,7 @@ import { useRackConfig } from './composables/useRackConfig'
 import { useDatabase } from './composables/useDatabase'
 import { usePasskey } from './composables/usePasskey'
 import { useToast } from './composables/useToast'
+import { logError, logWarn, logInfo, logDebug } from '@/utils/logger'
 
 const showConfig = ref(false)
 const showImportExport = ref(false)
@@ -313,7 +314,7 @@ async function finishEditingSiteName() {
       currentSite.value.name = newName
     }
   } catch (err) {
-    console.error('Failed to save site name:', err)
+    logError('Failed to save site name', err)
     showToast('error', 'Failed to save site name')
   }
 
@@ -384,7 +385,7 @@ function handleConfigLoaded(configData) {
 }
 
 function handleAuthenticated(user) {
-  console.log('User authenticated:', user)
+  logInfo('User authenticated:', user)
 }
 
 // Share current site
@@ -400,7 +401,7 @@ function shareCurrentSite() {
   navigator.clipboard.writeText(shareUrl).then(() => {
     showToast('success', 'Share link copied to clipboard!')
   }).catch(err => {
-    console.error('Failed to copy:', err)
+    logError('Failed to copy', err)
     showToast('error', 'Failed to copy link')
   })
 }

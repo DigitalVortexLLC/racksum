@@ -1,4 +1,5 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 // Resource provider types
 export const PROVIDER_TYPES = {
@@ -16,7 +17,7 @@ export function useResourceProviders() {
       try {
         resourceProviders.value = JSON.parse(saved)
       } catch (err) {
-        console.error('Error loading resource providers:', err)
+        logError('Error loading resource providers', err)
         resourceProviders.value = []
       }
     }

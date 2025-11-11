@@ -1321,6 +1321,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useToast } from '../composables/useToast';
 import { useResourceProviders } from '../composables/useResourceProviders';
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger';
 
 const props = defineProps({
   initialTab: {
@@ -1428,7 +1429,7 @@ function loadDeviceGroups() {
     try {
       deviceGroups.value = JSON.parse(saved);
     } catch (err) {
-      console.error('Error loading device groups:', err);
+      logError('Error loading device groups', err);
     }
   }
 }
@@ -1439,7 +1440,7 @@ function loadCustomDevices() {
     try {
       customDevices.value = JSON.parse(saved);
     } catch (err) {
-      console.error('Error loading custom devices:', err);
+      logError('Error loading custom devices', err);
     }
   }
 }
@@ -1788,7 +1789,7 @@ function handleFileSelect(event) {
       importDevices(data);
     } catch (err) {
       importError.value = 'Invalid JSON file. Please check the file format.';
-      console.error('Import error:', err);
+      logError('Import error', err);
     }
   };
   
@@ -1871,7 +1872,7 @@ function importDevices(data) {
     window.dispatchEvent(new CustomEvent('devices-updated'));
   } catch (err) {
     importError.value = err.message;
-    console.error('Import error:', err);
+    logError('Import error', err);
   }
 }
 </script>

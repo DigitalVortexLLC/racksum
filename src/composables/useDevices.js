@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const categories = ref([])
 const loading = ref(false)
@@ -33,7 +34,7 @@ export function useDevices() {
         try {
           customGroups = JSON.parse(savedGroups)
         } catch (err) {
-          console.error('Error loading custom device groups:', err)
+          logError('Error loading custom device groups', err)
         }
       }
 
@@ -44,7 +45,7 @@ export function useDevices() {
         try {
           customDevices = JSON.parse(savedDevices)
         } catch (err) {
-          console.error('Error loading custom devices:', err)
+          logError('Error loading custom devices', err)
         }
       }
 
@@ -83,7 +84,7 @@ export function useDevices() {
 
       categories.value = mergedCategories
     } catch (err) {
-      console.error('Failed to load devices:', err)
+      logError('Failed to load devices', err)
       error.value = err.message
     } finally {
       loading.value = false

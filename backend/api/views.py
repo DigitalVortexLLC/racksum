@@ -3,6 +3,8 @@ import os
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
@@ -155,7 +157,7 @@ def rack_operations_view(request, site_id):
     if request.method == "GET":
         try:
             site = get_object_or_404(Site, id=site_id)
-            racks = RackConfiguration.objects.filter(site=site)
+            racks = RackConfiguration.objects.select_related('site').filter(site=site)
             serializer = RackConfigurationSerializer(racks, many=True)
             return Response(serializer.data)
         except Exception as e:
@@ -213,7 +215,10 @@ def get_rack_configuration(request, site_id, rack_name):
     """
     try:
         site = get_object_or_404(Site, id=site_id)
-        rack = RackConfiguration.objects.filter(site=site, name=rack_name).first()
+        rack = RackConfiguration.objects.select_related('site').filter(
+            site=site,
+            name=rack_name
+        ).first()
 
         if not rack:
             return Response({"error": "Rack configuration not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -311,6 +316,7 @@ def load_rack_config(request):
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
+@cache_page(60 * 15)  # Cache for 15 minutes
 def get_devices(request):
     """
     Serve devices.json file
@@ -398,9 +404,14 @@ class DeviceViewSet(viewsets.ModelViewSet):
     ViewSet for Device CRUD operations
     """
 
-    queryset = Device.objects.all()
+    queryset = Device.objects.select_related('provider', 'device_group').all()
     serializer_class = DeviceSerializer
     permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(60 * 10))  # Cache for 10 minutes
+    def list(self, request, *args, **kwargs):
+        """List all devices with caching"""
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """
@@ -590,6 +601,7 @@ def remove_device_from_rack(request, rack_device_id):
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
+@cache_page(60 * 5)  # Cache for 5 minutes
 def get_site_resource_usage(request, site_id):
     """
     Get resource usage (power and HVAC) for a specific site

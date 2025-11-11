@@ -97,6 +97,7 @@ import { useRackConfig } from '../composables/useRackConfig'
 import { useToast } from '../composables/useToast'
 import RackSlot from './RackSlot.vue'
 import DeleteRackModal from './DeleteRackModal.vue'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const props = defineProps({
   rack: {
@@ -167,7 +168,7 @@ const handleDrop = (event) => {
       emit('reorder', data.index, props.index)
     }
   } catch (e) {
-    console.error('Failed to parse drag data:', e)
+    logError('Failed to parse drag data', e)
   }
 }
 

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useRackConfig } from './useRackConfig'
 import { useToast } from './useToast'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const draggedDevice = ref(null)
 const dragSource = ref(null) // { type: 'library' | 'unracked' | 'rack', rackId?, position? }
@@ -35,7 +36,7 @@ export function useDragDrop() {
           dragSource.value = source
         }
       } catch (error) {
-        console.error('Failed to parse dropped device:', error)
+        logError('Failed to parse dropped device', error)
         return
       }
     }
@@ -104,7 +105,7 @@ export function useDragDrop() {
           dragSource.value = source
         }
       } catch (error) {
-        console.error('Failed to parse dropped device:', error)
+        logError('Failed to parse dropped device', error)
         return
       }
     }

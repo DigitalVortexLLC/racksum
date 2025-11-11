@@ -1,6 +1,7 @@
 import { ref, watch } from 'vue'
 import { useDatabase } from './useDatabase'
 import { useResourceProviders } from './useResourceProviders'
+import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const STORAGE_KEY = 'racker-config'
 
@@ -42,7 +43,7 @@ const loadFromStorage = () => {
       config.value = JSON.parse(saved)
     }
   } catch (error) {
-    console.error('Failed to load configuration from localStorage:', error)
+    logError('Failed to load configuration from localStorage', error)
   }
 }
 
@@ -52,7 +53,7 @@ watch(config, (newConfig) => {
     newConfig.metadata.lastModified = new Date().toISOString()
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig))
   } catch (error) {
-    console.error('Failed to save configuration to localStorage:', error)
+    logError('Failed to save configuration to localStorage', error)
   }
 }, { deep: true })
 
@@ -72,7 +73,7 @@ watch(config, (newConfig) => {
 
   // Set new timer for debounced auto-save
   autoSaveTimer = setTimeout(() => {
-    console.log(`Auto-saving "${currentRackName.value}" to site "${currentSite.value.name}"`)
+    logInfo(`Auto-saving "${currentRackName.value}" to site "${currentSite.value.name}"`)
     autoSaveRackConfiguration(newConfig)
   }, AUTO_SAVE_DELAY)
 }, { deep: true })
