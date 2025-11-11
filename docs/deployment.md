@@ -59,7 +59,7 @@ Deploy to a Linux server (Ubuntu, Debian, etc.).
 sudo apt update && sudo apt upgrade -y
 
 # Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Install Python
@@ -253,7 +253,7 @@ Create `Dockerfile` in project root:
 # Multi-stage build
 
 # Stage 1: Build frontend
-FROM node:18 AS frontend-builder
+FROM node:20 AS frontend-builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install

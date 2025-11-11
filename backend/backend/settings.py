@@ -19,11 +19,12 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 import logging
 
 # Load environment variables
-load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
 # Install PyMySQL as MySQLdb only when using MySQL
 if os.getenv("DB_ENGINE", "sqlite") == "mysql":
     import pymysql
+
     pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -52,7 +53,7 @@ if SENTRY_DSN:
 
     integrations = [
         DjangoIntegration(
-            transaction_style='url',
+            transaction_style="url",
             middleware_spans=True,
             signals_spans=True,
             cache_spans=True,
@@ -90,12 +91,12 @@ if SENTRY_DSN:
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', "django-insecure-6a_$0w=w(9n%ud1frq7+h&unrciyy-oe_@0il-xqyj-i1$h!q5")
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-6a_$0w=w(9n%ud1frq7+h&unrciyy-oe_@0il-xqyj-i1$h!q5")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 
 # Application definition
@@ -127,8 +128,12 @@ MIDDLEWARE = [
 ]
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if not CORS_ALLOW_ALL_ORIGINS else []
+CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
+CORS_ALLOWED_ORIGINS = (
+    os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    if not CORS_ALLOW_ALL_ORIGINS
+    else []
+)
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "backend.urls"
@@ -136,7 +141,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR.parent / 'dist'],  # Vue build directory
+        "DIRS": [BASE_DIR.parent / "dist"],  # Vue build directory
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -218,7 +223,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'dist' / 'assets',  # Vue build assets
+    BASE_DIR.parent / "dist" / "assets",  # Vue build assets
 ]
 
 # Default primary key field type
@@ -228,17 +233,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST Framework settings
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
     ],
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'EXCEPTION_HANDLER': 'api.exception_handlers.custom_exception_handler',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "api.exception_handlers.custom_exception_handler",
 }
 
 # Allow URLs without trailing slashes
@@ -248,15 +253,15 @@ APPEND_SLASH = False
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 
 # Session settings
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 # CSRF settings
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False  # Must be False for JavaScript to read it
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 # MCP Server Configuration
 MCP_ENABLED = os.getenv("MCP_ENABLED", "false").lower() == "true"
@@ -264,19 +269,19 @@ MCP_PORT = int(os.getenv("MCP_PORT", "3001"))
 
 # drf-spectacular settings for OpenAPI/Swagger documentation
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'RackSum API',
-    'DESCRIPTION': 'Datacenter Rack Management API - Manage sites, racks, devices, and resource utilization with WebAuthn/Passkey authentication',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SCHEMA_PATH_PREFIX': '/api/',
-    'COMPONENT_SPLIT_REQUEST': True,
-    'TAGS': [
-        {'name': 'Sites', 'description': 'Physical datacenter site management'},
-        {'name': 'Devices', 'description': 'Device template and type management'},
-        {'name': 'Racks', 'description': 'Rack configuration and management'},
-        {'name': 'Rack Devices', 'description': 'Device placement within racks'},
-        {'name': 'Resource Usage', 'description': 'Power and HVAC resource calculations'},
-        {'name': 'Authentication', 'description': 'WebAuthn/Passkey authentication endpoints'},
-        {'name': 'Legacy', 'description': 'Legacy compatibility endpoints'},
+    "TITLE": "RackSum API",
+    "DESCRIPTION": "Datacenter Rack Management API - Manage sites, racks, devices, and resource utilization with WebAuthn/Passkey authentication",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "TAGS": [
+        {"name": "Sites", "description": "Physical datacenter site management"},
+        {"name": "Devices", "description": "Device template and type management"},
+        {"name": "Racks", "description": "Rack configuration and management"},
+        {"name": "Rack Devices", "description": "Device placement within racks"},
+        {"name": "Resource Usage", "description": "Power and HVAC resource calculations"},
+        {"name": "Authentication", "description": "WebAuthn/Passkey authentication endpoints"},
+        {"name": "Legacy", "description": "Legacy compatibility endpoints"},
     ],
 }

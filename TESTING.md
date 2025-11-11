@@ -169,7 +169,7 @@ GitHub Actions automatically runs tests on every push and pull request.
 ### Workflow Jobs
 
 1. **Frontend Tests** (`frontend`)
-   - Runs on Node.js 18.x and 20.x
+   - Runs on Node.js 20.x and 22.x
    - Executes ESLint
    - Runs Vitest tests
    - Builds the frontend

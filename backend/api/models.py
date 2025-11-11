@@ -10,6 +10,7 @@ class HardwareProvider(models.Model):
     """
     Represents a hardware/equipment provider
     """
+
     name = models.CharField(max_length=255, unique=True, db_index=True)
     description = models.TextField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
@@ -17,8 +18,8 @@ class HardwareProvider(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'hardware_providers'
-        ordering = ['name']
+        db_table = "hardware_providers"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -28,14 +29,15 @@ class DeviceGroup(models.Model):
     """
     Represents a logical grouping of device types
     """
+
     name = models.CharField(max_length=255, unique=True, db_index=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'device_groups'
-        ordering = ['name']
+        db_table = "device_groups"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -45,31 +47,32 @@ class Device(models.Model):
     """
     Represents a device type/template that can be placed in racks
     """
+
     device_id = models.CharField(max_length=255, unique=True, db_index=True)
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100, db_index=True)
     provider = models.ForeignKey(
         HardwareProvider,
         on_delete=models.SET_NULL,
-        related_name='devices',
-        db_column='provider_id',
+        related_name="devices",
+        db_column="provider_id",
         null=True,
-        blank=True
+        blank=True,
     )
     device_group = models.ForeignKey(
         DeviceGroup,
         on_delete=models.SET_NULL,
-        related_name='devices',
-        db_column='device_group_id',
+        related_name="devices",
+        db_column="device_group_id",
         null=True,
-        blank=True
+        blank=True,
     )
     ru_size = models.IntegerField(validators=[MinValueValidator(0)])
     power_draw = models.IntegerField(validators=[MinValueValidator(0)], help_text="Power consumption in watts")
     power_ports_used = models.IntegerField(
         validators=[MinValueValidator(0)],
         default=1,
-        help_text="Number of PDU power ports required (e.g., 2 for dual PSU)"
+        help_text="Number of PDU power ports required (e.g., 2 for dual PSU)",
     )
     color = models.CharField(max_length=7, default="#000000", help_text="Hex color code for display")
     description = models.TextField(blank=True, null=True)
@@ -77,11 +80,11 @@ class Device(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'devices'
-        ordering = ['category', 'name']
+        db_table = "devices"
+        ordering = ["category", "name"]
         indexes = [
-            models.Index(fields=['device_id']),
-            models.Index(fields=['category']),
+            models.Index(fields=["device_id"]),
+            models.Index(fields=["category"]),
         ]
 
     def __str__(self):
@@ -92,6 +95,7 @@ class Site(models.Model):
     """
     Represents a physical location/datacenter
     """
+
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=255, unique=True, db_index=True)
     description = models.TextField(blank=True, null=True)
@@ -99,8 +103,8 @@ class Site(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'sites'
-        ordering = ['name']
+        db_table = "sites"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -110,12 +114,8 @@ class RackConfiguration(models.Model):
     """
     Stores complete rack layouts for a site
     """
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        related_name='rack_configurations',
-        db_column='site_id'
-    )
+
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name="rack_configurations", db_column="site_id")
     name = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True, null=True)
     config_data = models.JSONField()
@@ -123,14 +123,14 @@ class RackConfiguration(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'rack_configurations'
-        unique_together = [['site', 'name']]
-        ordering = ['name']
+        db_table = "rack_configurations"
+        unique_together = [["site", "name"]]
+        ordering = ["name"]
         indexes = [
-            models.Index(fields=['site']),
-            models.Index(fields=['name']),
+            models.Index(fields=["site"]),
+            models.Index(fields=["name"]),
             # Composite index for common (site_id, name) lookups
-            models.Index(fields=['site', 'name'], name='rack_config_site_name_idx'),
+            models.Index(fields=["site", "name"], name="rack_config_site_name_idx"),
         ]
 
     def __str__(self):
@@ -141,12 +141,8 @@ class Rack(models.Model):
     """
     Represents an individual rack within a site
     """
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        related_name='racks',
-        db_column='site_id'
-    )
+
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name="racks", db_column="site_id")
     name = models.CharField(max_length=255)
     ru_height = models.IntegerField(default=42, validators=[MinValueValidator(1)])
     description = models.TextField(blank=True, null=True)
@@ -154,14 +150,14 @@ class Rack(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'racks'
-        unique_together = [['site', 'name']]
-        ordering = ['site', 'name']
+        db_table = "racks"
+        unique_together = [["site", "name"]]
+        ordering = ["site", "name"]
         indexes = [
-            models.Index(fields=['site']),
-            models.Index(fields=['name']),
+            models.Index(fields=["site"]),
+            models.Index(fields=["name"]),
             # Composite index for common (site_id, name) lookups
-            models.Index(fields=['site', 'name'], name='rack_site_name_idx'),
+            models.Index(fields=["site", "name"], name="rack_site_name_idx"),
         ]
 
     def __str__(self):
@@ -190,31 +186,24 @@ class RackDevice(models.Model):
     """
     Represents a device instance placed in a specific rack at a specific position
     """
-    rack = models.ForeignKey(
-        Rack,
-        on_delete=models.CASCADE,
-        related_name='rack_devices',
-        db_column='rack_id'
-    )
-    device = models.ForeignKey(
-        Device,
-        on_delete=models.CASCADE,
-        related_name='rack_placements',
-        db_column='device_id'
-    )
+
+    rack = models.ForeignKey(Rack, on_delete=models.CASCADE, related_name="rack_devices", db_column="rack_id")
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name="rack_placements", db_column="device_id")
     position = models.IntegerField(validators=[MinValueValidator(1)], help_text="Starting RU position (1-based)")
-    instance_name = models.CharField(max_length=255, blank=True, null=True, help_text="Custom name for this device instance")
+    instance_name = models.CharField(
+        max_length=255, blank=True, null=True, help_text="Custom name for this device instance"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'rack_devices'
-        unique_together = [['rack', 'position']]
-        ordering = ['rack', 'position']
+        db_table = "rack_devices"
+        unique_together = [["rack", "position"]]
+        ordering = ["rack", "position"]
         indexes = [
-            models.Index(fields=['rack']),
-            models.Index(fields=['device']),
-            models.Index(fields=['position']),
+            models.Index(fields=["rack"]),
+            models.Index(fields=["device"]),
+            models.Index(fields=["position"]),
         ]
 
     def __str__(self):
@@ -226,17 +215,13 @@ class Provider(models.Model):
     """
     Represents a resource provider (power, cooling) that can optionally consume RU space
     """
+
     PROVIDER_TYPES = [
-        ('power', 'Power'),
-        ('cooling', 'Cooling'),
+        ("power", "Power"),
+        ("cooling", "Cooling"),
     ]
 
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        related_name='providers',
-        db_column='site_id'
-    )
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name="providers", db_column="site_id")
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=20, choices=PROVIDER_TYPES, db_index=True)
     description = models.TextField(blank=True, null=True)
@@ -244,79 +229,71 @@ class Provider(models.Model):
 
     # Capacity fields (resource provisioning)
     power_capacity = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=0,
-        help_text="Power capacity in watts"
+        validators=[MinValueValidator(0)], default=0, help_text="Power capacity in watts"
     )
     power_ports_capacity = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=0,
-        help_text="Number of power ports available (for PDUs)"
+        validators=[MinValueValidator(0)], default=0, help_text="Number of power ports available (for PDUs)"
     )
     cooling_capacity = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=0,
-        help_text="Cooling capacity in BTU/hr"
+        validators=[MinValueValidator(0)], default=0, help_text="Cooling capacity in BTU/hr"
     )
 
     # RU space consumption fields (optional rack placement)
     ru_size = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=0,
-        help_text="Rack units consumed (0 = not racked)"
+        validators=[MinValueValidator(0)], default=0, help_text="Rack units consumed (0 = not racked)"
     )
     rack = models.ForeignKey(
         Rack,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='providers',
-        db_column='rack_id',
-        help_text="Rack where this provider is installed (null = not racked)"
+        related_name="providers",
+        db_column="rack_id",
+        help_text="Rack where this provider is installed (null = not racked)",
     )
     position = models.IntegerField(
         validators=[MinValueValidator(1)],
         null=True,
         blank=True,
-        help_text="Starting RU position in rack (null = not racked)"
+        help_text="Starting RU position in rack (null = not racked)",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'resource_providers'
-        ordering = ['site', 'type', 'name']
+        db_table = "resource_providers"
+        ordering = ["site", "type", "name"]
         indexes = [
-            models.Index(fields=['site']),
-            models.Index(fields=['type']),
-            models.Index(fields=['rack']),
+            models.Index(fields=["site"]),
+            models.Index(fields=["type"]),
+            models.Index(fields=["rack"]),
             # Composite indexes for common queries
-            models.Index(fields=['site', 'type'], name='provider_site_type_idx'),
-            models.Index(fields=['site', 'name'], name='provider_site_name_idx'),
-            models.Index(fields=['rack', 'position'], name='provider_rack_pos_idx'),
+            models.Index(fields=["site", "type"], name="provider_site_type_idx"),
+            models.Index(fields=["site", "name"], name="provider_site_name_idx"),
+            models.Index(fields=["rack", "position"], name="provider_rack_pos_idx"),
         ]
         constraints = [
             # Check constraint: if ru_size is 0, rack and position must be null
             models.CheckConstraint(
                 check=(
-                    models.Q(ru_size__gt=0) |
-                    (models.Q(ru_size=0) & models.Q(rack__isnull=True) & models.Q(position__isnull=True))
+                    models.Q(ru_size__gt=0)
+                    | (models.Q(ru_size=0) & models.Q(rack__isnull=True) & models.Q(position__isnull=True))
                 ),
-                name='provider_zero_rusize_not_racked'
+                name="provider_zero_rusize_not_racked",
             ),
             # Check constraint: if racked, must have both rack and position
             models.CheckConstraint(
                 check=(
-                    (models.Q(rack__isnull=True) & models.Q(position__isnull=True)) |
-                    (models.Q(rack__isnull=False) & models.Q(position__isnull=False))
+                    (models.Q(rack__isnull=True) & models.Q(position__isnull=True))
+                    | (models.Q(rack__isnull=False) & models.Q(position__isnull=False))
                 ),
-                name='provider_rack_position_together'
+                name="provider_rack_position_together",
             ),
             # Check constraint: position must be positive if set
             models.CheckConstraint(
                 check=models.Q(position__isnull=True) | models.Q(position__gte=1),
-                name='provider_position_positive'
+                name="provider_position_positive",
             ),
         ]
 
@@ -360,12 +337,11 @@ class Passkey(models.Model):
     """
     Stores WebAuthn/FIDO2 passkey credentials for passwordless authentication
     """
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='passkeys'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="passkeys")
+    credential_id = models.CharField(
+        max_length=255, unique=True, db_index=True, help_text="Base64-encoded credential ID"
     )
-    credential_id = models.CharField(max_length=255, unique=True, db_index=True, help_text="Base64-encoded credential ID")
     public_key = models.TextField(help_text="Base64-encoded public key")
     sign_count = models.IntegerField(default=0, help_text="Signature counter for replay protection")
     transports = models.JSONField(default=list, blank=True, help_text="Supported transports (usb, nfc, ble, internal)")
@@ -375,11 +351,11 @@ class Passkey(models.Model):
     last_used_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = 'passkeys'
-        ordering = ['-created_at']
+        db_table = "passkeys"
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['user']),
-            models.Index(fields=['credential_id']),
+            models.Index(fields=["user"]),
+            models.Index(fields=["credential_id"]),
         ]
 
     def __str__(self):
@@ -390,31 +366,26 @@ class PasskeyChallenge(models.Model):
     """
     Temporary storage for WebAuthn challenges during registration/authentication
     """
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='passkey_challenges',
-        null=True,
-        blank=True
-    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="passkey_challenges", null=True, blank=True)
     challenge = models.CharField(max_length=255, help_text="Base64-encoded challenge")
     challenge_type = models.CharField(
         max_length=20,
         choices=[
-            ('registration', 'Registration'),
-            ('authentication', 'Authentication'),
-        ]
+            ("registration", "Registration"),
+            ("authentication", "Authentication"),
+        ],
     )
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(help_text="Challenge expiration time")
 
     class Meta:
-        db_table = 'passkey_challenges'
-        ordering = ['-created_at']
+        db_table = "passkey_challenges"
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['user']),
-            models.Index(fields=['challenge']),
-            models.Index(fields=['expires_at']),
+            models.Index(fields=["user"]),
+            models.Index(fields=["challenge"]),
+            models.Index(fields=["expires_at"]),
         ]
 
     def __str__(self):

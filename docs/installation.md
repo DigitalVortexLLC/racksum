@@ -8,7 +8,7 @@ Before installing Racker, ensure you have the following software installed:
 
 ### Required Software
 
-- **Node.js**: Version 18 or higher
+- **Node.js**: Version 20 or higher
   - Download from [nodejs.org](https://nodejs.org/)
   - Verify installation: `node --version`
 

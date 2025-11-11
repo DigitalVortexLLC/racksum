@@ -17,18 +17,12 @@ class ApiConfig(AppConfig):
 
         # Only start MCP server once and only if enabled
         # Also check if we're running the main server (not migrations, etc.)
-        if (settings.MCP_ENABLED and
-            not ApiConfig.mcp_server_started and
-            os.environ.get('RUN_MAIN') == 'true'):
+        if settings.MCP_ENABLED and not ApiConfig.mcp_server_started and os.environ.get("RUN_MAIN") == "true":
 
             ApiConfig.mcp_server_started = True
 
             # Start MCP server in a separate thread
-            thread = threading.Thread(
-                target=self._start_mcp_server,
-                daemon=True,
-                name="MCP-Server"
-            )
+            thread = threading.Thread(target=self._start_mcp_server, daemon=True, name="MCP-Server")
             thread.start()
 
             print(f"[MCP] Server starting in background on port {settings.MCP_PORT}...")

@@ -1,6 +1,7 @@
 """
 MCP Server for RackSum - Provides site stats and resource information
 """
+
 import os
 import sys
 import django
@@ -18,7 +19,7 @@ import json
 
 # Setup Django environment
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 
 from api.models import Site, Rack, Device, RackDevice, DeviceGroup, Provider
@@ -35,25 +36,16 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="get_site_stats",
             description="Get statistics for all sites including rack count, device count, and resource usage",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
+            inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         Tool(
             name="get_site_details",
             description="Get detailed information about a specific site including all racks and resource usage",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site to get details for"
-                    }
-                },
-                "required": ["site_name"]
-            }
+                "properties": {"site_name": {"type": "string", "description": "Name of the site to get details for"}},
+                "required": ["site_name"],
+            },
         ),
         Tool(
             name="get_rack_details",
@@ -61,39 +53,24 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site containing the rack"
-                    },
-                    "rack_name": {
-                        "type": "string",
-                        "description": "Name of the rack to get details for"
-                    }
+                    "site_name": {"type": "string", "description": "Name of the site containing the rack"},
+                    "rack_name": {"type": "string", "description": "Name of the rack to get details for"},
                 },
-                "required": ["site_name", "rack_name"]
-            }
+                "required": ["site_name", "rack_name"],
+            },
         ),
         Tool(
             name="get_available_resources",
             description="Get information about available device types and their specifications",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "category": {
-                        "type": "string",
-                        "description": "Filter devices by category (optional)"
-                    }
-                }
-            }
+                "properties": {"category": {"type": "string", "description": "Filter devices by category (optional)"}},
+            },
         ),
         Tool(
             name="get_resource_summary",
             description="Get overall resource utilization summary across all sites",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
+            inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         Tool(
             name="create_device",
@@ -101,41 +78,20 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "device_id": {
-                        "type": "string",
-                        "description": "Unique identifier for the device"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "Display name of the device"
-                    },
-                    "category": {
-                        "type": "string",
-                        "description": "Device category (e.g., Server, Network, Storage)"
-                    },
-                    "ru_size": {
-                        "type": "integer",
-                        "description": "Rack unit size of the device"
-                    },
-                    "power_draw": {
-                        "type": "integer",
-                        "description": "Power consumption in watts"
-                    },
+                    "device_id": {"type": "string", "description": "Unique identifier for the device"},
+                    "name": {"type": "string", "description": "Display name of the device"},
+                    "category": {"type": "string", "description": "Device category (e.g., Server, Network, Storage)"},
+                    "ru_size": {"type": "integer", "description": "Rack unit size of the device"},
+                    "power_draw": {"type": "integer", "description": "Power consumption in watts"},
                     "power_ports_used": {
                         "type": "integer",
-                        "description": "Number of PDU power ports required (default: 1)"
+                        "description": "Number of PDU power ports required (default: 1)",
                     },
-                    "color": {
-                        "type": "string",
-                        "description": "Hex color code for display (default: #000000)"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Optional description of the device"
-                    }
+                    "color": {"type": "string", "description": "Hex color code for display (default: #000000)"},
+                    "description": {"type": "string", "description": "Optional description of the device"},
                 },
-                "required": ["device_id", "name", "category", "ru_size", "power_draw"]
-            }
+                "required": ["device_id", "name", "category", "ru_size", "power_draw"],
+            },
         ),
         Tool(
             name="create_rack",
@@ -143,25 +99,13 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site to add the rack to"
-                    },
-                    "rack_name": {
-                        "type": "string",
-                        "description": "Name of the new rack"
-                    },
-                    "ru_height": {
-                        "type": "integer",
-                        "description": "Height of the rack in rack units (default: 42)"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Optional description of the rack"
-                    }
+                    "site_name": {"type": "string", "description": "Name of the site to add the rack to"},
+                    "rack_name": {"type": "string", "description": "Name of the new rack"},
+                    "ru_height": {"type": "integer", "description": "Height of the rack in rack units (default: 42)"},
+                    "description": {"type": "string", "description": "Optional description of the rack"},
                 },
-                "required": ["site_name", "rack_name"]
-            }
+                "required": ["site_name", "rack_name"],
+            },
         ),
         Tool(
             name="delete_rack",
@@ -169,17 +113,11 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "site_name": {
-                        "type": "string",
-                        "description": "Name of the site containing the rack"
-                    },
-                    "rack_name": {
-                        "type": "string",
-                        "description": "Name of the rack to delete"
-                    }
+                    "site_name": {"type": "string", "description": "Name of the site containing the rack"},
+                    "rack_name": {"type": "string", "description": "Name of the rack to delete"},
                 },
-                "required": ["site_name", "rack_name"]
-            }
+                "required": ["site_name", "rack_name"],
+            },
         ),
         Tool(
             name="update_site_name",
@@ -187,17 +125,11 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "old_name": {
-                        "type": "string",
-                        "description": "Current name of the site"
-                    },
-                    "new_name": {
-                        "type": "string",
-                        "description": "New name for the site"
-                    }
+                    "old_name": {"type": "string", "description": "Current name of the site"},
+                    "new_name": {"type": "string", "description": "New name for the site"},
                 },
-                "required": ["old_name", "new_name"]
-            }
+                "required": ["old_name", "new_name"],
+            },
         ),
         Tool(
             name="create_device_group",
@@ -205,17 +137,11 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Name of the device group"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Optional description of the device group"
-                    }
+                    "name": {"type": "string", "description": "Name of the device group"},
+                    "description": {"type": "string", "description": "Optional description of the device group"},
                 },
-                "required": ["name"]
-            }
+                "required": ["name"],
+            },
         ),
         Tool(
             name="create_provider",
@@ -223,22 +149,13 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Name of the provider"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Optional description of the provider"
-                    },
-                    "website": {
-                        "type": "string",
-                        "description": "Optional website URL of the provider"
-                    }
+                    "name": {"type": "string", "description": "Name of the provider"},
+                    "description": {"type": "string", "description": "Optional description of the provider"},
+                    "website": {"type": "string", "description": "Optional website URL of the provider"},
                 },
-                "required": ["name"]
-            }
-        )
+                "required": ["name"],
+            },
+        ),
     ]
 
 
@@ -290,6 +207,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
 async def get_site_stats() -> list[TextContent]:
     """Get statistics for all sites"""
+
     @sync_to_async
     def get_stats():
         sites = list(Site.objects.all())
@@ -324,6 +242,7 @@ async def get_site_stats() -> list[TextContent]:
 
 async def get_site_details(site_name: str) -> list[TextContent]:
     """Get detailed information about a specific site"""
+
     @sync_to_async
     def get_details():
         try:
@@ -369,6 +288,7 @@ async def get_site_details(site_name: str) -> list[TextContent]:
 
 async def get_rack_details(site_name: str, rack_name: str) -> list[TextContent]:
     """Get detailed information about a specific rack"""
+
     @sync_to_async
     def get_details():
         try:
@@ -388,7 +308,7 @@ async def get_rack_details(site_name: str, rack_name: str) -> list[TextContent]:
         details.append(f"Created: {rack.created_at.strftime('%Y-%m-%d %H:%M')}")
         details.append(f"Last Updated: {rack.updated_at.strftime('%Y-%m-%d %H:%M')}\n")
 
-        devices = list(rack.rack_devices.all().select_related('device'))
+        devices = list(rack.rack_devices.all().select_related("device"))
         ru_used = sum(device.device.ru_size for device in devices)
         ru_available = rack.ru_height - ru_used
         power = rack.get_power_utilization()
@@ -423,6 +343,7 @@ async def get_rack_details(site_name: str, rack_name: str) -> list[TextContent]:
 
 async def get_available_resources(category: str = None) -> list[TextContent]:
     """Get information about available device types"""
+
     @sync_to_async
     def get_resources():
         devices = Device.objects.all()
@@ -467,6 +388,7 @@ async def get_available_resources(category: str = None) -> list[TextContent]:
 
 async def get_resource_summary() -> list[TextContent]:
     """Get overall resource utilization summary"""
+
     @sync_to_async
     def get_summary():
         sites = list(Site.objects.all())
@@ -522,6 +444,7 @@ async def get_resource_summary() -> list[TextContent]:
 
 async def create_device(arguments: dict) -> list[TextContent]:
     """Create a new device type"""
+
     @sync_to_async
     def create():
         try:
@@ -533,7 +456,7 @@ async def create_device(arguments: dict) -> list[TextContent]:
                 power_draw=arguments.get("power_draw"),
                 power_ports_used=arguments.get("power_ports_used", 1),
                 color=arguments.get("color", "#000000"),
-                description=arguments.get("description", "")
+                description=arguments.get("description", ""),
             )
             return f"✅ Device created successfully!\n\nDevice ID: {device.device_id}\nName: {device.name}\nCategory: {device.category}\nSize: {device.ru_size}U\nPower: {device.power_draw}W"
         except Exception as e:
@@ -545,6 +468,7 @@ async def create_device(arguments: dict) -> list[TextContent]:
 
 async def create_rack(arguments: dict) -> list[TextContent]:
     """Create a new rack in a site"""
+
     @sync_to_async
     def create():
         try:
@@ -564,7 +488,7 @@ async def create_rack(arguments: dict) -> list[TextContent]:
                 site=site,
                 name=rack_name,
                 ru_height=arguments.get("ru_height", 42),
-                description=arguments.get("description", "")
+                description=arguments.get("description", ""),
             )
             return f"✅ Rack created successfully!\n\nSite: {site.name}\nRack: {rack.name}\nHeight: {rack.ru_height}U"
         except Exception as e:
@@ -576,6 +500,7 @@ async def create_rack(arguments: dict) -> list[TextContent]:
 
 async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
     """Delete a rack from a site"""
+
     @sync_to_async
     def delete():
         try:
@@ -603,6 +528,7 @@ async def delete_rack(site_name: str, rack_name: str) -> list[TextContent]:
 
 async def update_site_name(old_name: str, new_name: str) -> list[TextContent]:
     """Update a site's name"""
+
     @sync_to_async
     def update():
         try:
@@ -628,6 +554,7 @@ async def update_site_name(old_name: str, new_name: str) -> list[TextContent]:
 
 async def create_device_group(arguments: dict) -> list[TextContent]:
     """Create a new device group"""
+
     @sync_to_async
     def create():
         try:
@@ -636,10 +563,7 @@ async def create_device_group(arguments: dict) -> list[TextContent]:
             if DeviceGroup.objects.filter(name=name).exists():
                 return f"❌ Device group '{name}' already exists."
 
-            device_group = DeviceGroup.objects.create(
-                name=name,
-                description=arguments.get("description", "")
-            )
+            device_group = DeviceGroup.objects.create(name=name, description=arguments.get("description", ""))
             return f"✅ Device group created successfully!\n\nName: {device_group.name}\nDescription: {device_group.description or 'N/A'}"
         except Exception as e:
             return f"❌ Error creating device group: {str(e)}"
@@ -650,6 +574,7 @@ async def create_device_group(arguments: dict) -> list[TextContent]:
 
 async def create_provider(arguments: dict) -> list[TextContent]:
     """Create a new hardware provider"""
+
     @sync_to_async
     def create():
         try:
@@ -659,9 +584,7 @@ async def create_provider(arguments: dict) -> list[TextContent]:
                 return f"❌ Provider '{name}' already exists."
 
             provider = Provider.objects.create(
-                name=name,
-                description=arguments.get("description", ""),
-                website=arguments.get("website", "")
+                name=name, description=arguments.get("description", ""), website=arguments.get("website", "")
             )
             return f"✅ Provider created successfully!\n\nName: {provider.name}\nWebsite: {provider.website or 'N/A'}\nDescription: {provider.description or 'N/A'}"
         except Exception as e:
@@ -674,11 +597,7 @@ async def create_provider(arguments: dict) -> list[TextContent]:
 async def main_stdio():
     """Run MCP server with stdio transport"""
     async with stdio_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream,
-            write_stream,
-            app.create_initialization_options()
-        )
+        await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
 async def handle_mcp_request(request):
@@ -691,58 +610,44 @@ async def handle_mcp_request(request):
         if method == "tools/list":
             tools = await list_tools()
             result = [{"name": t.name, "description": t.description, "inputSchema": t.inputSchema} for t in tools]
-            return Response(
-                content=json.dumps({"result": result}),
-                media_type="application/json"
-            )
+            return Response(content=json.dumps({"result": result}), media_type="application/json")
         elif method == "tools/call":
             tool_name = params.get("name")
             arguments = params.get("arguments", {})
             result = await call_tool(tool_name, arguments)
             return Response(
                 content=json.dumps({"result": [{"type": r.type, "text": r.text} for r in result]}),
-                media_type="application/json"
+                media_type="application/json",
             )
         else:
             return Response(
                 content=json.dumps({"error": f"Unknown method: {method}"}),
                 media_type="application/json",
-                status_code=400
+                status_code=400,
             )
     except Exception as e:
-        return Response(
-            content=json.dumps({"error": str(e)}),
-            media_type="application/json",
-            status_code=500
-        )
+        return Response(content=json.dumps({"error": str(e)}), media_type="application/json", status_code=500)
 
 
 def create_http_app():
     """Create Starlette app for HTTP transport"""
-    routes = [
-        Route("/mcp", handle_mcp_request, methods=["POST"])
-    ]
+    routes = [Route("/mcp", handle_mcp_request, methods=["POST"])]
     return Starlette(debug=True, routes=routes)
 
 
 async def main_http(port: int):
     """Run MCP server with HTTP transport"""
-    config = uvicorn.Config(
-        create_http_app(),
-        host="0.0.0.0",
-        port=port,
-        log_level="info"
-    )
+    config = uvicorn.Config(create_http_app(), host="0.0.0.0", port=port, log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MCP Server for RackSum")
-    parser.add_argument("--transport", choices=["stdio", "http"], default="stdio",
-                      help="Transport protocol to use (default: stdio)")
-    parser.add_argument("--port", type=int, default=3001,
-                      help="Port for HTTP transport (default: 3001)")
+    parser.add_argument(
+        "--transport", choices=["stdio", "http"], default="stdio", help="Transport protocol to use (default: stdio)"
+    )
+    parser.add_argument("--port", type=int, default=3001, help="Port for HTTP transport (default: 3001)")
     args = parser.parse_args()
 
     if args.transport == "http":
