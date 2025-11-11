@@ -259,6 +259,11 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 MCP_ENABLED = os.getenv("MCP_ENABLED", "false").lower() == "true"
 MCP_PORT = int(os.getenv("MCP_PORT", "3001"))
 
+# Power and Cooling Calculation Constants
+# These are standard engineering constants used for resource calculations
+WATTS_TO_BTU = float(os.getenv("WATTS_TO_BTU", "3.412"))
+BTU_PER_TON = float(os.getenv("BTU_PER_TON", "12000"))
+
 # drf-spectacular settings for OpenAPI/Swagger documentation
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RackSum API',
