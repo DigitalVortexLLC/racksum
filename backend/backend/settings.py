@@ -305,7 +305,10 @@ BTU_PER_TON = float(os.getenv("BTU_PER_TON", "12000"))
 # drf-spectacular settings for OpenAPI/Swagger documentation
 SPECTACULAR_SETTINGS = {
     "TITLE": "RackSum API",
-    "DESCRIPTION": "Datacenter Rack Management API - Manage sites, racks, devices, and resource utilization with WebAuthn/Passkey authentication",
+    "DESCRIPTION": (
+        "Datacenter Rack Management API - Manage sites, racks, devices, and resource utilization "
+        "with WebAuthn/Passkey authentication"
+    ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/",

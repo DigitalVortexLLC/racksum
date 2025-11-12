@@ -4,6 +4,7 @@ MCP Server for RackSum - Main entry point
 Provides site stats and resource information through the Model Context Protocol.
 This server exposes datacenter infrastructure data to AI assistants like Claude.
 """
+
 import os
 import sys
 import django
@@ -15,18 +16,15 @@ from mcp.server.stdio import stdio_server
 
 # Setup Django environment
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 
-from .tools import get_tool_definitions
-from . import handlers
+from .tools import get_tool_definitions  # noqa: E402
+from . import handlers  # noqa: E402
 
 # Configure logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format='[MCP] %(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="[MCP] %(asctime)s - %(levelname)s - %(message)s")
 
 # Create MCP server instance
 app = Server("racksum-stats")
@@ -103,11 +101,7 @@ async def main_stdio():
     """Run MCP server with stdio transport"""
     logger.info("Starting RackSum MCP server with stdio transport...")
     async with stdio_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream,
-            write_stream,
-            app.create_initialization_options()
-        )
+        await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
 async def handle_mcp_request(request):

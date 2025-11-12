@@ -1,6 +1,7 @@
 """
 Tests for MCP server tool definitions
 """
+
 from django.test import TestCase
 from mcp.tools import get_tool_definitions
 from mcp.types import Tool
@@ -118,29 +119,14 @@ class TestToolDefinitions(TestCase):
 
         # Check get_site_details
         site_details = next(t for t in tools if t.name == "get_site_details")
-        self.assertEqual(
-            site_details.inputSchema["properties"]["site_name"]["type"],
-            "string"
-        )
+        self.assertEqual(site_details.inputSchema["properties"]["site_name"]["type"], "string")
 
         # Check get_rack_details
         rack_details = next(t for t in tools if t.name == "get_rack_details")
-        self.assertEqual(
-            rack_details.inputSchema["properties"]["site_name"]["type"],
-            "string"
-        )
-        self.assertEqual(
-            rack_details.inputSchema["properties"]["rack_name"]["type"],
-            "string"
-        )
+        self.assertEqual(rack_details.inputSchema["properties"]["site_name"]["type"], "string")
+        self.assertEqual(rack_details.inputSchema["properties"]["rack_name"]["type"], "string")
 
         # Check get_available_resources
         resources = next(t for t in tools if t.name == "get_available_resources")
-        self.assertEqual(
-            resources.inputSchema["properties"]["category"]["type"],
-            "string"
-        )
-        self.assertEqual(
-            resources.inputSchema["properties"]["limit"]["type"],
-            "integer"
-        )
+        self.assertEqual(resources.inputSchema["properties"]["category"]["type"], "string")
+        self.assertEqual(resources.inputSchema["properties"]["limit"]["type"], "integer")

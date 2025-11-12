@@ -1,8 +1,6 @@
 import json
 import os
 from django.conf import settings
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets, status
@@ -19,7 +17,6 @@ from .models import Site, RackConfiguration, Device, Rack, RackDevice, Provider
 from .serializers import (
     SiteSerializer,
     RackConfigurationSerializer,
-    RackConfigurationCreateSerializer,
     DeviceSerializer,
     RackSerializer,
     RackCreateSerializer,
@@ -157,7 +154,7 @@ def rack_operations_view(request, site_id):
     if request.method == "GET":
         try:
             site = get_object_or_404(Site, id=site_id)
-            racks = RackConfiguration.objects.select_related('site').filter(site=site)
+            racks = RackConfiguration.objects.select_related("site").filter(site=site)
             serializer = RackConfigurationSerializer(racks, many=True)
             return Response(serializer.data)
         except Exception as e:
@@ -215,10 +212,7 @@ def get_rack_configuration(request, site_id, rack_name):
     """
     try:
         site = get_object_or_404(Site, id=site_id)
-        rack = RackConfiguration.objects.select_related('site').filter(
-            site=site,
-            name=rack_name
-        ).first()
+        rack = RackConfiguration.objects.select_related("site").filter(site=site, name=rack_name).first()
 
         if not rack:
             return Response({"error": "Rack configuration not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -337,9 +331,9 @@ def get_devices(request):
 @extend_schema(
     summary="Get validation schemas",
     description="Retrieve centralized validation schemas for frontend validation",
-    tags=["Validation"]
+    tags=["Validation"],
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def get_validation_schemas(request):
     """
@@ -350,8 +344,8 @@ def get_validation_schemas(request):
         return Response(schemas)
     except Exception as e:
         return Response(
-            {'error': 'Failed to retrieve validation schemas', 'details': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            {"error": "Failed to retrieve validation schemas", "details": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -404,7 +398,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
     ViewSet for Device CRUD operations
     """
 
-    queryset = Device.objects.select_related('provider', 'device_group').all()
+    queryset = Device.objects.select_related("provider", "device_group").all()
     serializer_class = DeviceSerializer
     permission_classes = [AllowAny]
 

@@ -32,7 +32,6 @@ class ApiConfig(AppConfig):
         """Start the MCP server in a separate thread"""
         try:
             import asyncio
-            from django.conf import settings
 
             # Add backend directory to path
             backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))

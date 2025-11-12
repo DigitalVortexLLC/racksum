@@ -4,17 +4,16 @@ WebAuthn/Passkey Authentication Views
 
 import os
 import base64
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.contrib.auth import get_user_model, login, logout
 from django.utils import timezone
-from django.conf import settings
 from django.db import models
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 
 from webauthn import (
@@ -74,7 +73,10 @@ def auth_config(request):
 
 @extend_schema(
     summary="Begin passkey registration",
-    description="Start the WebAuthn passkey registration process. Creates a new user if needed and generates registration options.",
+    description=(
+        "Start the WebAuthn passkey registration process. "
+        "Creates a new user if needed and generates registration options."
+    ),
     tags=["Authentication"],
     request={"application/json": {"example": {"username": "john_doe", "email": "john@example.com"}}},
     responses={
@@ -151,7 +153,10 @@ def begin_registration(request):
 
 @extend_schema(
     summary="Complete passkey registration",
-    description="Complete the WebAuthn passkey registration by verifying the credential and storing it. Automatically logs the user in.",
+    description=(
+        "Complete the WebAuthn passkey registration by verifying the credential and storing it. "
+        "Automatically logs the user in."
+    ),
     tags=["Authentication"],
     request={"application/json": {"example": {"user_id": 1, "credential": {}, "name": "My Laptop"}}},
     responses={
@@ -246,7 +251,10 @@ def complete_registration(request):
 
 @extend_schema(
     summary="Begin passkey authentication",
-    description="Start the WebAuthn passkey authentication process. Optionally provide username to authenticate a specific user.",
+    description=(
+        "Start the WebAuthn passkey authentication process. "
+        "Optionally provide username to authenticate a specific user."
+    ),
     tags=["Authentication"],
     request={"application/json": {"example": {"username": "john_doe"}}},
     responses={
@@ -313,7 +321,10 @@ def begin_authentication(request):
 
 @extend_schema(
     summary="Complete passkey authentication",
-    description="Complete the WebAuthn passkey authentication by verifying the credential. Logs the user in on success.",
+    description=(
+        "Complete the WebAuthn passkey authentication by verifying the credential. "
+        "Logs the user in on success."
+    ),
     tags=["Authentication"],
     request={"application/json": {"example": {"credential": {}}}},
     responses={

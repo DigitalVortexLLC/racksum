@@ -1,14 +1,10 @@
 """
 Tests for MCP server formatters
 """
+
 import pytest
 from django.test import TestCase, override_settings
-from mcp.formatters import (
-    format_power,
-    format_hvac,
-    format_space_utilization,
-    calculate_heat_output
-)
+from mcp.formatters import format_power, format_hvac, format_space_utilization, calculate_heat_output
 
 
 class TestFormatters(TestCase):
@@ -120,27 +116,33 @@ class TestFormatters(TestCase):
             self.assertAlmostEqual(result, 1707.706, places=2)
 
 
-@pytest.mark.parametrize("watts,expected", [
-    (0, "0 W (0.00 kW)"),
-    (1, "1 W (0.00 kW)"),
-    (999, "999 W (1.00 kW)"),
-    (1000, "1,000 W (1.00 kW)"),
-    (1500, "1,500 W (1.50 kW)"),
-    (10000, "10,000 W (10.00 kW)"),
-    (100000, "100,000 W (100.00 kW)"),
-])
+@pytest.mark.parametrize(
+    "watts,expected",
+    [
+        (0, "0 W (0.00 kW)"),
+        (1, "1 W (0.00 kW)"),
+        (999, "999 W (1.00 kW)"),
+        (1000, "1,000 W (1.00 kW)"),
+        (1500, "1,500 W (1.50 kW)"),
+        (10000, "10,000 W (10.00 kW)"),
+        (100000, "100,000 W (100.00 kW)"),
+    ],
+)
 def test_format_power_parametrized(watts, expected):
     """Parametrized tests for power formatting"""
     assert format_power(watts) == expected
 
 
-@pytest.mark.parametrize("used,total,expected", [
-    (0, 42, "0U / 42U (0.0%)"),
-    (21, 42, "21U / 42U (50.0%)"),
-    (42, 42, "42U / 42U (100.0%)"),
-    (10, 42, "10U / 42U (23.8%)"),
-    (1, 3, "1U / 3U (33.3%)"),
-])
+@pytest.mark.parametrize(
+    "used,total,expected",
+    [
+        (0, 42, "0U / 42U (0.0%)"),
+        (21, 42, "21U / 42U (50.0%)"),
+        (42, 42, "42U / 42U (100.0%)"),
+        (10, 42, "10U / 42U (23.8%)"),
+        (1, 3, "1U / 3U (33.3%)"),
+    ],
+)
 def test_format_space_utilization_parametrized(used, total, expected):
     """Parametrized tests for space utilization formatting"""
     assert format_space_utilization(used, total) == expected

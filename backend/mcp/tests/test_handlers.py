@@ -1,6 +1,7 @@
 """
 Tests for MCP server handlers
 """
+
 import pytest
 from django.test import TestCase
 from mcp.types import TextContent
@@ -27,7 +28,7 @@ class TestGetSiteStats(TestCase):
         """Test get_site_stats with sites in database"""
         # Create test data
         site = Site.objects.create(name="Test Site", description="Test Description")
-        rack = Rack.objects.create(site=site, name="Rack-A1", ru_height=42)
+        _rack = Rack.objects.create(site=site, name="Rack-A1", ru_height=42)  # noqa: F841
 
         result = await handlers.get_site_stats()
 
@@ -45,19 +46,9 @@ class TestGetSiteStats(TestCase):
         site = Site.objects.create(name="Datacenter 1")
         rack = Rack.objects.create(site=site, name="Rack-A1", ru_height=42)
         device = Device.objects.create(
-            device_id="test-server",
-            name="Test Server",
-            category="Server",
-            ru_size=2,
-            power_draw=500,
-            color="#FF0000"
+            device_id="test-server", name="Test Server", category="Server", ru_size=2, power_draw=500, color="#FF0000"
         )
-        RackDevice.objects.create(
-            rack=rack,
-            device=device,
-            position=1,
-            instance_name="Server-001"
-        )
+        RackDevice.objects.create(rack=rack, device=device, position=1, instance_name="Server-001")
 
         result = await handlers.get_site_stats()
 
@@ -96,7 +87,7 @@ class TestGetSiteDetails(TestCase):
     @pytest.mark.asyncio
     async def test_get_site_details_existing_site(self):
         """Test get_site_details with existing site"""
-        site = Site.objects.create(name="Test Site", description="Test Description")
+        _site = Site.objects.create(name="Test Site", description="Test Description")  # noqa: F841
 
         result = await handlers.get_site_details("Test Site")
 
@@ -155,12 +146,7 @@ class TestGetRackDetails(TestCase):
     async def test_get_rack_details_existing_rack(self):
         """Test get_rack_details with existing rack"""
         site = Site.objects.create(name="Datacenter 1")
-        rack = Rack.objects.create(
-            site=site,
-            name="Rack-A1",
-            ru_height=42,
-            description="Main rack"
-        )
+        _rack = Rack.objects.create(site=site, name="Rack-A1", ru_height=42, description="Main rack")  # noqa: F841
 
         result = await handlers.get_rack_details("Datacenter 1", "Rack-A1")
 
@@ -188,19 +174,9 @@ class TestGetRackDetails(TestCase):
         site = Site.objects.create(name="Datacenter 1")
         rack = Rack.objects.create(site=site, name="Rack-A1", ru_height=42)
         device = Device.objects.create(
-            device_id="test-server",
-            name="Dell R740",
-            category="Server",
-            ru_size=2,
-            power_draw=750,
-            color="#0000FF"
+            device_id="test-server", name="Dell R740", category="Server", ru_size=2, power_draw=750, color="#0000FF"
         )
-        RackDevice.objects.create(
-            rack=rack,
-            device=device,
-            position=1,
-            instance_name="DB-Server-01"
-        )
+        RackDevice.objects.create(rack=rack, device=device, position=1, instance_name="DB-Server-01")
 
         result = await handlers.get_rack_details("Datacenter 1", "Rack-A1")
 
@@ -228,20 +204,10 @@ class TestGetAvailableResources(TestCase):
     async def test_get_available_resources_with_devices(self):
         """Test get_available_resources with devices"""
         Device.objects.create(
-            device_id="server-1",
-            name="Dell R740",
-            category="Server",
-            ru_size=2,
-            power_draw=750,
-            color="#FF0000"
+            device_id="server-1", name="Dell R740", category="Server", ru_size=2, power_draw=750, color="#FF0000"
         )
         Device.objects.create(
-            device_id="switch-1",
-            name="Cisco Nexus",
-            category="Network",
-            ru_size=1,
-            power_draw=200,
-            color="#00FF00"
+            device_id="switch-1", name="Cisco Nexus", category="Network", ru_size=1, power_draw=200, color="#00FF00"
         )
 
         result = await handlers.get_available_resources()
@@ -257,20 +223,10 @@ class TestGetAvailableResources(TestCase):
     async def test_get_available_resources_with_category_filter(self):
         """Test get_available_resources with category filter"""
         Device.objects.create(
-            device_id="server-1",
-            name="Dell R740",
-            category="Server",
-            ru_size=2,
-            power_draw=750,
-            color="#FF0000"
+            device_id="server-1", name="Dell R740", category="Server", ru_size=2, power_draw=750, color="#FF0000"
         )
         Device.objects.create(
-            device_id="switch-1",
-            name="Cisco Nexus",
-            category="Network",
-            ru_size=1,
-            power_draw=200,
-            color="#00FF00"
+            device_id="switch-1", name="Cisco Nexus", category="Network", ru_size=1, power_draw=200, color="#00FF00"
         )
 
         result = await handlers.get_available_resources(category="Server")
@@ -289,7 +245,7 @@ class TestGetAvailableResources(TestCase):
                 category="Server",
                 ru_size=1,
                 power_draw=100,
-                color="#FF0000"
+                color="#FF0000",
             )
 
         result = await handlers.get_available_resources(limit=2)
@@ -302,12 +258,7 @@ class TestGetAvailableResources(TestCase):
     async def test_get_available_resources_no_matching_category(self):
         """Test get_available_resources with non-matching category"""
         Device.objects.create(
-            device_id="server-1",
-            name="Dell R740",
-            category="Server",
-            ru_size=2,
-            power_draw=750,
-            color="#FF0000"
+            device_id="server-1", name="Dell R740", category="Server", ru_size=2, power_draw=750, color="#FF0000"
         )
 
         result = await handlers.get_available_resources(category="NonexistentCategory")
@@ -336,12 +287,7 @@ class TestGetResourceSummary(TestCase):
         rack2 = Rack.objects.create(site=site2, name="Rack-B1", ru_height=42)
 
         device = Device.objects.create(
-            device_id="server-1",
-            name="Server",
-            category="Server",
-            ru_size=2,
-            power_draw=500,
-            color="#FF0000"
+            device_id="server-1", name="Server", category="Server", ru_size=2, power_draw=500, color="#FF0000"
         )
 
         RackDevice.objects.create(rack=rack1, device=device, position=1)
@@ -374,7 +320,7 @@ class TestGetResourceSummary(TestCase):
             category="Server",
             ru_size=21,  # Exactly half
             power_draw=500,
-            color="#FF0000"
+            color="#FF0000",
         )
 
         RackDevice.objects.create(rack=rack, device=device, position=1)
