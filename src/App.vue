@@ -351,8 +351,6 @@ onMounted(async () => {
     try {
       await fetchSiteByUuid(siteUuid)
       showToast('success', `Loaded shared site: ${currentSite.value.name}`)
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
     } catch (err) {
       showToast('error', 'Failed to load shared site')
       loadCurrentSite()
