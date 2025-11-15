@@ -57,6 +57,8 @@ export function useResourceProviders() {
       ruSize: provider.ruSize || 0, // How many RUs this provider occupies (0 = not racked)
       rackId: provider.rackId || null, // Which rack it's placed in (null = not racked)
       position: provider.position || null, // Starting RU position in rack (null = not racked)
+      // Placement tracking - templates vs placed instances
+      isPlaced: provider.isPlaced || false, // false = template in library, true = placed instance
       custom: true,
       createdAt: new Date().toISOString()
     }
@@ -92,29 +94,37 @@ export function useResourceProviders() {
     return resourceProviders.value.find(p => p.id === providerId)
   }
 
-  // Computed totals
+  // Computed totals - ONLY count placed providers (not templates)
   const totalPowerCapacity = computed(() => {
-    return resourceProviders.value.reduce((sum, provider) => {
-      return sum + (provider.powerCapacity || 0)
-    }, 0)
+    return resourceProviders.value
+      .filter(p => p.isPlaced === true)
+      .reduce((sum, provider) => {
+        return sum + (provider.powerCapacity || 0)
+      }, 0)
   })
 
   const totalPowerPortsCapacity = computed(() => {
-    return resourceProviders.value.reduce((sum, provider) => {
-      return sum + (provider.powerPortsCapacity || 0)
-    }, 0)
+    return resourceProviders.value
+      .filter(p => p.isPlaced === true)
+      .reduce((sum, provider) => {
+        return sum + (provider.powerPortsCapacity || 0)
+      }, 0)
   })
 
   const totalCoolingCapacity = computed(() => {
-    return resourceProviders.value.reduce((sum, provider) => {
-      return sum + (provider.coolingCapacity || 0)
-    }, 0)
+    return resourceProviders.value
+      .filter(p => p.isPlaced === true)
+      .reduce((sum, provider) => {
+        return sum + (provider.coolingCapacity || 0)
+      }, 0)
   })
 
   const totalNetworkCapacity = computed(() => {
-    return resourceProviders.value.reduce((sum, provider) => {
-      return sum + (provider.networkCapacity || 0)
-    }, 0)
+    return resourceProviders.value
+      .filter(p => p.isPlaced === true)
+      .reduce((sum, provider) => {
+        return sum + (provider.networkCapacity || 0)
+      }, 0)
   })
 
   // Get providers by type
@@ -130,18 +140,45 @@ export function useResourceProviders() {
     return resourceProviders.value.filter(p => p.type === PROVIDER_TYPES.NETWORK)
   })
 
-  // Get racked vs unracked providers
+  // Get template providers (library items)
+  const getTemplateProviders = computed(() => {
+    return resourceProviders.value.filter(p => p.isPlaced === false)
+  })
+
+  // Get placed providers (actual instances)
+  const getPlacedProviders = computed(() => {
+    return resourceProviders.value.filter(p => p.isPlaced === true)
+  })
+
+  // Get racked vs unracked providers (only placed ones)
   const getRackedProviders = computed(() => {
-    return resourceProviders.value.filter(p => p.rackId && p.position && p.ruSize > 0)
+    return resourceProviders.value.filter(p => p.isPlaced === true && p.rackId && p.position && p.ruSize > 0)
   })
 
   const getUnrackedProviders = computed(() => {
-    return resourceProviders.value.filter(p => !p.rackId || !p.position || p.ruSize === 0)
+    return resourceProviders.value.filter(p => p.isPlaced === true && (!p.rackId || !p.position || p.ruSize === 0))
   })
 
   // Get providers for a specific rack
   const getProvidersForRack = (rackId) => {
     return resourceProviders.value.filter(p => p.rackId === rackId && p.position && p.ruSize > 0)
+  }
+
+  // Create instance from template (when dragging from library)
+  const createInstanceFromTemplate = (templateProvider, options = {}) => {
+    const instance = {
+      ...templateProvider,
+      id: `provider-instance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      isPlaced: true,
+      rackId: options.rackId || null,
+      position: options.position || null,
+      createdAt: new Date().toISOString()
+    }
+
+    resourceProviders.value.push(instance)
+    saveProviders()
+    window.dispatchEvent(new CustomEvent('resource-providers-updated'))
+    return instance
   }
 
   // Place provider in rack
@@ -153,7 +190,8 @@ export function useResourceProviders() {
 
     return updateProvider(providerId, {
       rackId,
-      position
+      position,
+      isPlaced: true
     })
   }
 
@@ -230,6 +268,8 @@ export function useResourceProviders() {
     getPowerProviders,
     getCoolingProviders,
     getNetworkProviders,
+    getTemplateProviders,
+    getPlacedProviders,
     getRackedProviders,
     getUnrackedProviders,
     getProvidersForRack,
@@ -239,6 +279,7 @@ export function useResourceProviders() {
     updateProvider,
     deleteProvider,
     getProviderById,
+    createInstanceFromTemplate,
     placeProviderInRack,
     removeProviderFromRack,
     exportProviders,

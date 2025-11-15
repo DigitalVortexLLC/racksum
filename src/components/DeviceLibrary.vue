@@ -122,7 +122,7 @@
 
       <!-- No providers message -->
       <div
-        v-if="resourceProviders.length === 0"
+        v-if="templateProviders.length === 0"
         class="text-center py-8"
       >
         <p class="text-sm mb-2 opacity-70">
@@ -209,62 +209,26 @@
         </div>
       </div>
 
-      <!-- Summary -->
+      <!-- Info about provider templates -->
       <div
-        v-if="resourceProviders.length > 0"
+        v-if="templateProviders.length > 0"
         class="mt-6 pt-4 border-t border-base-300"
       >
-        <div class="text-sm font-medium mb-3">
-          Total Capacity
-        </div>
-        <div class="space-y-2 text-xs opacity-70">
-          <div
-            v-if="totalPowerCapacity > 0"
-            class="flex items-center gap-2"
+        <div class="alert alert-info">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="stroke-current shrink-0 w-5 h-5"
           >
-            <svg
-              class="w-4 h-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <span>{{ totalPowerCapacity.toLocaleString() }}W</span>
-          </div>
-          <div
-            v-if="totalCoolingCapacity > 0"
-            class="flex items-center gap-2"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V9a1 1 0 11-2 0V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L5 10.274zm10 0l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L15 10.274z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <span>{{ (totalCoolingCapacity / 12000).toFixed(1) }} Tons</span>
-          </div>
-          <div
-            v-if="totalNetworkCapacity > 0"
-            class="flex items-center gap-2"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-            </svg>
-            <span>{{ totalNetworkCapacity }} Gbps</span>
-          </div>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="text-xs">Drag providers to racks or unracked devices to add capacity.</span>
         </div>
       </div>
     </div>
@@ -306,28 +270,27 @@ const filteredCategories = computed(() => {
 
 // Resource Providers
 const {
-  resourceProviders,
-  totalPowerCapacity,
-  totalCoolingCapacity,
-  totalNetworkCapacity
+  getTemplateProviders
 } = useResourceProviders()
+
+const templateProviders = getTemplateProviders
 
 const filteredProviderGroups = computed(() => {
   const groups = [
     {
       type: 'power',
       name: 'Power Providers',
-      providers: resourceProviders.value.filter(p => p.type === 'power')
+      providers: templateProviders.value.filter(p => p.type === 'power')
     },
     {
       type: 'cooling',
       name: 'Cooling Providers',
-      providers: resourceProviders.value.filter(p => p.type === 'cooling')
+      providers: templateProviders.value.filter(p => p.type === 'cooling')
     },
     {
       type: 'network',
       name: 'Network Providers',
-      providers: resourceProviders.value.filter(p => p.type === 'network')
+      providers: templateProviders.value.filter(p => p.type === 'network')
     }
   ].filter(group => group.providers.length > 0)
 
@@ -347,14 +310,12 @@ const filteredProviderGroups = computed(() => {
 })
 
 // Drag and drop handlers for providers
+import { useDragDrop } from '../composables/useDragDrop'
+
+const { startDrag } = useDragDrop()
+
 const handleDragStart = (event, provider) => {
-  // Use the standard drag mechanism from useDragDrop
-  // Add a 'provider' flag to distinguish providers from regular devices
-  const providerWithType = {
-    ...provider,
-    isProvider: true
-  }
-  startDrag(event, providerWithType)
+  startDrag(event, provider, { type: 'provider-library' })
   event.target.style.opacity = '0.5'
 }
 

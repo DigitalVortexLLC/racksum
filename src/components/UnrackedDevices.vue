@@ -21,7 +21,7 @@
             Unracked Devices
           </h2>
           <p class="text-sm text-primary-content/70">
-            {{ unrackedDevices.length }} device{{ unrackedDevices.length !== 1 ? 's' : '' }}
+            {{ unrackedDevices.length + unrackedProviders.length }} item{{ (unrackedDevices.length + unrackedProviders.length) !== 1 ? 's' : '' }}
           </p>
         </div>
         <button class="btn btn-ghost btn-sm btn-square text-primary-content/70 hover:text-primary-content">
@@ -62,10 +62,10 @@
           </svg>
           <span class="text-primary-content font-semibold">Unracked Devices</span>
           <span
-            v-if="unrackedDevices.length > 0"
+            v-if="unrackedDevices.length + unrackedProviders.length > 0"
             class="badge badge-error text-xs font-bold"
           >
-            {{ unrackedDevices.length }}
+            {{ unrackedDevices.length + unrackedProviders.length }}
           </span>
         </div>
         <button 
@@ -94,7 +94,7 @@
       class="p-4 flex-1 overflow-y-auto overflow-x-auto"
     >
       <div
-        v-if="unrackedDevices.length === 0"
+        v-if="unrackedDevices.length === 0 && unrackedProviders.length === 0"
         class="text-center py-8 text-base-content/60"
       >
         <svg
@@ -119,6 +119,7 @@
         v-else
         class="flex gap-2 flex-wrap"
       >
+        <!-- Devices -->
         <div
           v-for="device in unrackedDevices"
           :key="device.instanceId"
@@ -165,6 +166,82 @@
             </button>
           </div>
         </div>
+
+        <!-- Providers -->
+        <div
+          v-for="provider in unrackedProviders"
+          :key="provider.id"
+          class="p-3 rounded transition-colors border border-base-300 bg-success/10 hover:bg-success/20 flex items-center gap-3 min-w-[200px]"
+        >
+          <div class="flex items-center gap-3">
+            <!-- Provider icon -->
+            <svg
+              v-if="provider.type === 'power'"
+              class="w-5 h-5 text-success flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              v-else-if="provider.type === 'cooling'"
+              class="w-5 h-5 text-success flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V9a1 1 0 11-2 0V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L5 10.274zm10 0l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L15 10.274z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              v-else-if="provider.type === 'network'"
+              class="w-5 h-5 text-success flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+            </svg>
+
+            <!-- Provider info -->
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">
+                {{ provider.name }}
+              </div>
+              <div class="text-xs text-base-content/60">
+                <span v-if="provider.powerCapacity > 0">{{ provider.powerCapacity.toLocaleString() }}W</span>
+                <span v-if="provider.coolingCapacity > 0">{{ (provider.coolingCapacity / 12000).toFixed(1) }} Tons</span>
+                <span v-if="provider.networkCapacity > 0">{{ provider.networkCapacity }} Gbps</span>
+              </div>
+            </div>
+
+            <!-- Remove button -->
+            <button
+              class="btn btn-ghost btn-xs btn-square text-error hover:text-error flex-shrink-0"
+              title="Remove provider"
+              @click="removeProvider(provider.id)"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Helper text -->
@@ -194,6 +271,7 @@
 <script setup>
 import { ref, computed, inject, watch } from 'vue'
 import { useRackConfig } from '../composables/useRackConfig'
+import { useResourceProviders } from '../composables/useResourceProviders'
 import { useDragDrop } from '../composables/useDragDrop'
 import { useToast } from '../composables/useToast'
 
@@ -207,16 +285,19 @@ watch(isExpanded, (newValue) => {
 })
 
 const { unrackedDevices, removeUnrackedDevice } = useRackConfig()
+const { getUnrackedProviders, deleteProvider } = useResourceProviders()
 const { startDrag, handleDropToUnracked, dragSource } = useDragDrop()
 const { showSuccess, showInfo } = useToast()
+
+const unrackedProviders = getUnrackedProviders
 
 const handleDragStart = (event, device) => {
   startDrag(event, device, { type: 'unracked' })
 }
 
 const handleDragOver = (event) => {
-  // Only show drop zone if dragging from a rack
-  if (dragSource.value?.type === 'rack') {
+  // Show drop zone if dragging from a rack or from provider library
+  if (dragSource.value?.type === 'rack' || dragSource.value?.type === 'provider-library') {
     isDragOver.value = true
   }
 }
@@ -235,6 +316,14 @@ const removeDevice = (instanceId) => {
   if (confirm('Remove this device permanently?')) {
     removeUnrackedDevice(instanceId)
     showSuccess('Device removed', `${device?.customName || device?.name || 'Device'} has been removed`)
+  }
+}
+
+const removeProvider = (providerId) => {
+  const provider = unrackedProviders.value.find(p => p.id === providerId)
+  if (confirm('Remove this provider permanently?')) {
+    deleteProvider(providerId)
+    showSuccess('Provider removed', `${provider?.name || 'Provider'} has been removed`)
   }
 }
 </script>

@@ -1,46 +1,93 @@
 import { ref } from 'vue'
 import { useRackConfig } from './useRackConfig'
+import { useResourceProviders } from './useResourceProviders'
 import { useToast } from './useToast'
 import { logError, logWarn, logInfo, logDebug } from '../utils/logger'
 
 const draggedDevice = ref(null)
-const dragSource = ref(null) // { type: 'library' | 'unracked' | 'rack', rackId?, position? }
+const draggedProvider = ref(null)
+const dragSource = ref(null) // { type: 'library' | 'unracked' | 'rack' | 'provider-library', rackId?, position? }
 const cannotFitAnimation = ref(false)
 
 export function useDragDrop() {
-  const { addDeviceToRack, canPlaceDevice, removeDeviceFromRack, addProviderToRack } = useRackConfig()
+  const { addDeviceToRack, canPlaceDevice, removeDeviceFromRack } = useRackConfig()
+  const { createInstanceFromTemplate, updateProvider, deleteProvider } = useResourceProviders()
   const { showSuccess, showError } = useToast()
 
-  const startDrag = (event, device, source = { type: 'library' }) => {
-    draggedDevice.value = device
+  const startDrag = (event, item, source = { type: 'library' }) => {
+    // Determine if dragging a device or provider
+    if (source.type === 'provider-library') {
+      draggedProvider.value = item
+      draggedDevice.value = null
+      event.dataTransfer.effectAllowed = 'copy'
+      event.dataTransfer.setData('application/json', JSON.stringify({ provider: item, source }))
+    } else {
+      draggedDevice.value = item
+      draggedProvider.value = null
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('application/json', JSON.stringify({ device: item, source }))
+    }
     dragSource.value = source
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('application/json', JSON.stringify({ device, source }))
   }
 
   const handleDrop = (event, rackId, position) => {
     event.preventDefault()
 
     let device = draggedDevice.value
+    let provider = draggedProvider.value
     let source = dragSource.value
 
-    if (!device) {
-      // Try to get from dataTransfer
+    // Try to get from dataTransfer if not set
+    if (!device && !provider) {
       try {
         const data = event.dataTransfer.getData('application/json')
         if (data) {
           const parsed = JSON.parse(data)
-          device = parsed.device || parsed
+          if (parsed.provider) {
+            provider = parsed.provider
+            draggedProvider.value = provider
+          } else if (parsed.device) {
+            device = parsed.device
+            draggedDevice.value = device
+          }
           source = parsed.source || { type: 'library' }
-          draggedDevice.value = device
           dragSource.value = source
         }
       } catch (error) {
-        logError('Failed to parse dropped device', error)
+        logError('Failed to parse dropped item', error)
         return
       }
     }
 
+    // Handle provider drop
+    if (provider) {
+      // Check if provider needs rack space
+      if (provider.ruSize > 0) {
+        // Provider needs rack space - validate placement
+        if (!canPlaceDevice(rackId, position, provider.ruSize)) {
+          triggerCannotFitAnimation()
+          showError('Cannot place provider', 'Not enough space at this position')
+          draggedProvider.value = null
+          dragSource.value = null
+          return
+        }
+
+        // Create instance from template
+        const instance = createInstanceFromTemplate(provider, { rackId, position })
+        if (instance) {
+          showSuccess('Provider placed', `${provider.name} placed at position ${position}`)
+        }
+      } else {
+        // Provider is virtual (ruSize = 0) - cannot go in rack
+        showError('Cannot place provider', 'This provider does not use rack space. Drag it to unracked devices instead.')
+      }
+
+      draggedProvider.value = null
+      dragSource.value = null
+      return
+    }
+
+    // Handle device drop
     if (!device) return
 
     // Check if we're dropping in the same location
@@ -50,32 +97,6 @@ export function useDragDrop() {
       return
     }
 
-    // Handle resource providers differently from regular devices
-    if (device.isProvider) {
-      // Check if provider has ruSize > 0 (is rackable)
-      if (!device.ruSize || device.ruSize === 0) {
-        showError('Cannot place provider', 'This provider does not have a rack size configured')
-        draggedDevice.value = null
-        dragSource.value = null
-        return
-      }
-
-      // Add provider to rack
-      const success = addProviderToRack(rackId, device.id, position)
-
-      if (!success) {
-        triggerCannotFitAnimation()
-        showError('Cannot place provider', 'Not enough space at this position')
-      } else {
-        showSuccess('Provider placed', `${device.name} placed at position ${position}`)
-      }
-
-      draggedDevice.value = null
-      dragSource.value = null
-      return
-    }
-
-    // Regular device handling
     // Check if device can be placed (excluding the device itself if moving from rack)
     if (!canPlaceDevice(rackId, position, device.ruSize, device.instanceId)) {
       // Trigger wiggle animation
@@ -117,25 +138,45 @@ export function useDragDrop() {
     event.preventDefault()
 
     let device = draggedDevice.value
+    let provider = draggedProvider.value
     let source = dragSource.value
 
-    if (!device) {
-      // Try to get from dataTransfer
+    // Try to get from dataTransfer if not set
+    if (!device && !provider) {
       try {
         const data = event.dataTransfer.getData('application/json')
         if (data) {
           const parsed = JSON.parse(data)
-          device = parsed.device || parsed
+          if (parsed.provider) {
+            provider = parsed.provider
+            draggedProvider.value = provider
+          } else if (parsed.device) {
+            device = parsed.device
+            draggedDevice.value = device
+          }
           source = parsed.source || { type: 'library' }
-          draggedDevice.value = device
           dragSource.value = source
         }
       } catch (error) {
-        logError('Failed to parse dropped device', error)
+        logError('Failed to parse dropped item', error)
         return
       }
     }
 
+    // Handle provider drop to unracked
+    if (provider) {
+      // Create instance from template (unracked)
+      const instance = createInstanceFromTemplate(provider, {})
+      if (instance) {
+        showSuccess('Provider added', `${provider.name} added to unracked providers`)
+      }
+
+      draggedProvider.value = null
+      dragSource.value = null
+      return
+    }
+
+    // Handle device drop to unracked
     if (!device) return
 
     // Only allow moving from rack to unracked (not from library or already unracked)
@@ -161,6 +202,7 @@ export function useDragDrop() {
 
   return {
     draggedDevice,
+    draggedProvider,
     dragSource,
     cannotFitAnimation,
     startDrag,
