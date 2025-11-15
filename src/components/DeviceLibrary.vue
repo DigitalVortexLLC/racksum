@@ -275,6 +275,7 @@
 import { ref, computed } from 'vue'
 import { useDevices } from '../composables/useDevices'
 import { useResourceProviders } from '../composables/useResourceProviders'
+import { useDragDrop } from '../composables/useDragDrop'
 import DeviceCategory from './DeviceCategory.vue'
 
 defineEmits(['open-device-manager'])
@@ -285,6 +286,9 @@ const providerSearchQuery = ref('')
 
 // Devices
 const { categories } = useDevices()
+
+// Drag and drop
+const { startDrag } = useDragDrop()
 
 const filteredCategories = computed(() => {
   if (!deviceSearchQuery.value) return categories.value
@@ -344,11 +348,13 @@ const filteredProviderGroups = computed(() => {
 
 // Drag and drop handlers for providers
 const handleDragStart = (event, provider) => {
-  event.dataTransfer.effectAllowed = 'copy'
-  event.dataTransfer.setData('text/plain', JSON.stringify({
-    type: 'resource-provider',
-    provider: provider
-  }))
+  // Use the standard drag mechanism from useDragDrop
+  // Add a 'provider' flag to distinguish providers from regular devices
+  const providerWithType = {
+    ...provider,
+    isProvider: true
+  }
+  startDrag(event, providerWithType)
   event.target.style.opacity = '0.5'
 }
 

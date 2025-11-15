@@ -8,7 +8,7 @@ const dragSource = ref(null) // { type: 'library' | 'unracked' | 'rack', rackId?
 const cannotFitAnimation = ref(false)
 
 export function useDragDrop() {
-  const { addDeviceToRack, canPlaceDevice, removeDeviceFromRack } = useRackConfig()
+  const { addDeviceToRack, canPlaceDevice, removeDeviceFromRack, addProviderToRack } = useRackConfig()
   const { showSuccess, showError } = useToast()
 
   const startDrag = (event, device, source = { type: 'library' }) => {
@@ -50,6 +50,32 @@ export function useDragDrop() {
       return
     }
 
+    // Handle resource providers differently from regular devices
+    if (device.isProvider) {
+      // Check if provider has ruSize > 0 (is rackable)
+      if (!device.ruSize || device.ruSize === 0) {
+        showError('Cannot place provider', 'This provider does not have a rack size configured')
+        draggedDevice.value = null
+        dragSource.value = null
+        return
+      }
+
+      // Add provider to rack
+      const success = addProviderToRack(rackId, device.id, position)
+
+      if (!success) {
+        triggerCannotFitAnimation()
+        showError('Cannot place provider', 'Not enough space at this position')
+      } else {
+        showSuccess('Provider placed', `${device.name} placed at position ${position}`)
+      }
+
+      draggedDevice.value = null
+      dragSource.value = null
+      return
+    }
+
+    // Regular device handling
     // Check if device can be placed (excluding the device itself if moving from rack)
     if (!canPlaceDevice(rackId, position, device.ruSize, device.instanceId)) {
       // Trigger wiggle animation

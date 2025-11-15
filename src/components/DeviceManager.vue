@@ -1274,6 +1274,9 @@
             placeholder="0"
             class="input input-bordered w-full"
           >
+          <label class="label">
+            <span class="label-text-alt">Set to 1 or more to allow dragging into racks. 0 means not rackable.</span>
+          </label>
         </div>
 
         <div class="mb-4">
@@ -1741,7 +1744,8 @@ function closeProviderDialog() {
     coolingCapacityTons: 0,
     networkCapacity: 0,
     location: '',
-    description: ''
+    description: '',
+    ruSize: 0
   };
 }
 
@@ -1755,7 +1759,8 @@ function editProvider(provider) {
     coolingCapacityTons: provider.coolingCapacity ? provider.coolingCapacity / 12000 : 0,
     networkCapacity: provider.networkCapacity || 0,
     location: provider.location || '',
-    description: provider.description || ''
+    description: provider.description || '',
+    ruSize: provider.ruSize || 0
   };
   addProviderDialog.value?.showModal();
 }
@@ -1767,10 +1772,12 @@ function handleSaveProvider() {
     name: newProvider.value.name.trim(),
     type: newProvider.value.type,
     powerCapacity: newProvider.value.type === 'power' ? newProvider.value.powerCapacity : 0,
+    powerPortsCapacity: newProvider.value.type === 'power' ? newProvider.value.powerPortsCapacity : 0,
     coolingCapacity: newProvider.value.type === 'cooling' ? newProvider.value.coolingCapacityTons * 12000 : 0,
     networkCapacity: newProvider.value.type === 'network' ? newProvider.value.networkCapacity : 0,
     location: newProvider.value.location?.trim() || '',
-    description: newProvider.value.description?.trim() || ''
+    description: newProvider.value.description?.trim() || '',
+    ruSize: newProvider.value.ruSize || 0
   };
 
   if (editingProvider.value) {
